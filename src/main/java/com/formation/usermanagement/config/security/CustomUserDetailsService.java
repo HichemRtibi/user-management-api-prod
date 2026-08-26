@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("🔍 Chargement de l'utilisateur : {}", email);
 
         // 1. Chercher l'utilisateur par email
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+        Utilisateur utilisateur = utilisateurRepository.findByEmailWithAllRelations(email)
                 .orElseThrow(() -> {
                     log.warn("❌ Utilisateur non trouvé : {}", email);
                     return new UsernameNotFoundException("Utilisateur non trouvé avec l'email : " + email);

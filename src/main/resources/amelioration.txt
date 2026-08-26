@@ -8,3 +8,13 @@
 8. ✅ I18N (Internationalisation)
 9. ✅ GraphQL
 10. ✅ WebSocket
+
+
+
+
+amelioration perfermance
+ÉTAPE 1 : Activer les logs SQL et statistiques
+ÉTAPE 2 : Tester l'endpoint POST /api/auth/login
+ÉTAPE 3 : Analyser les logs et identifier le N+1
+ÉTAPE 4 : Corriger avec JOIN FETCH
+ÉTAPE 5 : Vérifier que le problème est résolu

@@ -276,4 +276,9 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
 
     @Query("SELECT u FROM Utilisateur u WHERE u.derniereConnexion IS NOT NULL ORDER BY u.derniereConnexion DESC")
     List<Utilisateur> findDerniersConnectes();
+    @Query("SELECT u FROM Utilisateur u " +
+            "LEFT JOIN FETCH u.roles r " +
+            "LEFT JOIN FETCH r.permissions " +
+            "WHERE u.email = :email")
+    Optional<Utilisateur> findByEmailWithAllRelations(@Param("email") String email);
 }

@@ -47,14 +47,14 @@ public class AuthController {
 
         String token = tokenProvider.generateToken(authentication);
 
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(loginRequest.getEmail())
+        Utilisateur utilisateur = utilisateurRepository.findByEmailWithAllRelations(loginRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
         // ✅ RECHARGER l'utilisateur depuis la base pour avoir createdAt
-        Utilisateur utilisateurReload = utilisateurRepository.findById(utilisateur.getId())
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+//        Utilisateur utilisateurReload = utilisateurRepository.findById(utilisateur.getId())
+//                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        UtilisateurResponseDTO utilisateurDTO = UtilisateurMapper.toResponseDTO(utilisateurReload);
+        UtilisateurResponseDTO utilisateurDTO = UtilisateurMapper.toResponseDTO(utilisateur);
 
         log.info("✅ Connexion réussie pour : {}", loginRequest.getEmail());
 
