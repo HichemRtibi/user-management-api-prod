@@ -8,6 +8,12 @@ import com.formation.usermanagement.entity.Utilisateur;
 import com.formation.usermanagement.mapper.UtilisateurMapper;
 import com.formation.usermanagement.repository.UtilisateurRepository;
 import com.formation.usermanagement.config.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Authentification", description = "API pour l'authentification des utilisateurs")
+
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -33,6 +41,19 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
+    @Operation(
+            summary = "Connexion utilisateur",
+            description = "Authentifie un utilisateur et retourne un token JWT"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Connexion réussie",
+                    content = @Content(schema = @Schema(implementation = LoginResponseDTO.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "Email ou mot de passe invalide"),
+            @ApiResponse(responseCode = "401", description = "Non authentifié")
+    })
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
         log.info("🔐 Tentative de connexion : {}", loginRequest.getEmail());
 
