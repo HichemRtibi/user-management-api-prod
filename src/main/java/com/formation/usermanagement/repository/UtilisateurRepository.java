@@ -1,6 +1,8 @@
 package com.formation.usermanagement.repository;
 
 import com.formation.usermanagement.entity.Utilisateur;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -281,4 +283,13 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
             "LEFT JOIN FETCH r.permissions " +
             "WHERE u.email = :email")
     Optional<Utilisateur> findByEmailWithAllRelations(@Param("email") String email);
+    @Query("SELECT u FROM Utilisateur u LEFT JOIN FETCH u.roles")
+    Page<Utilisateur> findAllWithRoles(Pageable pageable);
+
+
+    @Query("SELECT u FROM Utilisateur u " +
+            "LEFT JOIN FETCH u.roles r " +
+            "LEFT JOIN FETCH r.permissions")
+    Page<Utilisateur> findAllWithRolesAndPermissions(Pageable pageable);
+
 }

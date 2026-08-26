@@ -157,7 +157,7 @@ public class RoleServiceImpl implements RoleService {
         log.info("📋 Récupération des rôles - Page: {}, Size: {}",
                 pageable.getPageNumber(), pageable.getPageSize());
 
-        Page<Role> page = roleRepository.findAll(pageable);
+        Page<Role> page = roleRepository.findAllRoleWithRealations(pageable);
         Page<RoleDTO> mappedPage = page.map(RoleMapper::toDTO);
 
         return new PageResponseDTO<>(mappedPage);

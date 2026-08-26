@@ -421,7 +421,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         // - size : Taille de la page
         // - number : Numéro de la page
         // - first, last, empty, etc.
-        Page<Utilisateur> page = utilisateurRepository.findAll(pageable);
+        Page<Utilisateur> page = utilisateurRepository.findAllWithRolesAndPermissions(pageable);
         log.debug("📄 Page récupérée : {} éléments sur {}",
                 page.getNumberOfElements(), page.getTotalElements());
 

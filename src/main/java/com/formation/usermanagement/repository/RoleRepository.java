@@ -1,6 +1,9 @@
 package com.formation.usermanagement.repository;
 
 import com.formation.usermanagement.entity.Role;
+import com.formation.usermanagement.entity.Utilisateur;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -210,6 +213,11 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     List<Object[]> findMostPopularRoles();
     @Query("SELECT COUNT(r) FROM Role r JOIN r.permissions p WHERE p.name = :permissionName")
     long countRolesByPermissionName(@Param("permissionName") String permissionName);
+     @Query("select r from Role r LEFT JOIN FETCH r.permissions")
+    Page<Role> findAllRoleWithRealations(Pageable pageable);
+
+
+
 
 
 }
