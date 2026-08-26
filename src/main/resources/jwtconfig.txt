@@ -1,0 +1,18 @@
+ÉTAPE 1 : Ajouter les dépendances JWT dans pom.xml
+ÉTAPE 2 : Créer JwtTokenProvider.java
+ÉTAPE 3 : Créer JwtAuthenticationFilter.java
+ÉTAPE 4 : Créer CustomUserDetailsService.java
+ÉTAPE 5 : Créer SecurityConfig.java
+ÉTAPE 6 : Créer AuthController.java
+ÉTAPE 7 : Créer LoginRequestDTO et LoginResponseDTO
+ÉTAPE 8 : Tester l'inscription (Register)
+ÉTAPE 9 : Tester la connexion (Login)
+ÉTAPE 10 : Tester un endpoint sécurisé avec le token
+
+
+--------------------------------------------securisation des api------------------
+ÉTAPE 1 : Activer @EnableMethodSecurity dans SecurityConfig
+ÉTAPE 2 : Ajouter @PreAuthorize sur PermissionController (GET /api/permissions)
+ÉTAPE 3 : Tester avec un utilisateur sans permission → 403 Forbidden
+ÉTAPE 4 : Ajouter @PreAuthorize sur tous les endpoints de PermissionController
+ÉTAPE 5 : Ajouter @PreAuthorize sur RoleController et UtilisateurController

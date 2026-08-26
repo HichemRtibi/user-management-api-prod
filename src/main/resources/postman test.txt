@@ -1,0 +1,952 @@
+# ================================================================
+# GUIDE COMPLET DE TESTS POSTMAN
+# USER MANAGEMENT API
+# ================================================================
+
+# PRÉPARATION
+# -----------
+# 1. Créer un Environment Postman :
+#    - Nom : UserManagement - DEV
+#    - Variable : baseUrl = http://localhost:8080
+#
+# 2. Créer une Collection : User Management API
+#
+# 3. Démarrer l'application Spring Boot
+
+
+# ================================================================
+# 1. PERMISSION CONTROLLER
+# ================================================================
+
+
+# ---------- 1.1 TESTS DE CRÉATION (POST) ----------
+
+### 1.1.1 - Créer USER_READ
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_READ",
+    "description": "Permet de consulter les utilisateurs"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 1,
+#     "category": "USER",
+#     "name": "USER_READ",
+#     "description": "Permet de consulter les utilisateurs"
+# }
+
+
+### 1.1.2 - Créer USER_WRITE
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_WRITE",
+    "description": "Permet de modifier les utilisateurs"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 2,
+#     "category": "USER",
+#     "name": "USER_WRITE",
+#     "description": "Permet de modifier les utilisateurs"
+# }
+
+
+### 1.1.3 - Créer USER_DELETE
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_DELETE",
+    "description": "Permet de supprimer des utilisateurs"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 3,
+#     "category": "USER",
+#     "name": "USER_DELETE",
+#     "description": "Permet de supprimer des utilisateurs"
+# }
+
+
+### 1.1.4 - Créer ROLE_READ
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "ROLE",
+    "name": "ROLE_READ",
+    "description": "Permet de consulter les rôles"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 4,
+#     "category": "ROLE",
+#     "name": "ROLE_READ",
+#     "description": "Permet de consulter les rôles"
+# }
+
+
+### 1.1.5 - Créer ROLE_ASSIGN
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "ROLE",
+    "name": "ROLE_ASSIGN",
+    "description": "Permet d'assigner des rôles"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 5,
+#     "category": "ROLE",
+#     "name": "ROLE_ASSIGN",
+#     "description": "Permet d'assigner des rôles"
+# }
+
+
+### 1.1.6 - Créer PERMISSION_READ
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "PERMISSION",
+    "name": "PERMISSION_READ",
+    "description": "Permet de consulter les permissions"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 6,
+#     "category": "PERMISSION",
+#     "name": "PERMISSION_READ",
+#     "description": "Permet de consulter les permissions"
+# }
+
+
+### 1.1.7 - Erreur : Permission déjà existante
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_READ",
+    "description": "Duplicata"
+}
+# RÉPONSE ATTENDUE : 409 Conflict
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 409,
+#     "error": "Conflict",
+#     "message": "La permission USER_READ existe déjà"
+# }
+
+
+### 1.1.8 - Erreur : Validation échouée
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "",
+    "name": "",
+    "description": "Champs vides"
+}
+# RÉPONSE ATTENDUE : 400 Bad Request
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 400,
+#     "error": "Bad Request",
+#     "message": "Validation échouée : name: Le nom de la permission est obligatoire, category: La catégorie est obligatoire"
+# }
+
+
+### 1.1.9 - Erreur : Nom avec caractères invalides
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "user-read",
+    "description": "Nom invalide"
+}
+# RÉPONSE ATTENDUE : 400 Bad Request
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 400,
+#     "error": "Bad Request",
+#     "message": "Validation échouée : name: Le nom ne doit contenir que des lettres majuscules et des underscores"
+# }
+
+
+### 1.1.10 - Erreur : Catégorie avec caractères invalides
+POST {{baseUrl}}/api/permissions
+Content-Type: application/json
+
+{
+    "category": "User-Service",
+    "name": "USER_TEST",
+    "description": "Catégorie invalide"
+}
+# RÉPONSE ATTENDUE : 400 Bad Request
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 400,
+#     "error": "Bad Request",
+#     "message": "Validation échouée : category: La catégorie ne doit contenir que des lettres majuscules et des underscores"
+# }
+
+
+# ---------- 1.2 TESTS DE LECTURE (GET) ----------
+
+### 1.2.1 - Récupérer toutes les permissions (paginé)
+GET {{baseUrl}}/api/permissions?page=0&size=10&sort=name,asc
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "content": [
+#         { "id": 1, "category": "USER", "name": "USER_READ", "description": "..." },
+#         { "id": 2, "category": "USER", "name": "USER_WRITE", "description": "..." }
+#     ],
+#     "totalElements": 6,
+#     "totalPages": 1,
+#     "size": 10,
+#     "number": 0
+# }
+
+
+### 1.2.2 - Récupérer toutes les permissions (sans pagination)
+GET {{baseUrl}}/api/permissions/all
+# RÉPONSE ATTENDUE : 200 OK
+# [
+#     { "id": 1, "category": "USER", "name": "USER_READ", "description": "..." },
+#     { "id": 2, "category": "USER", "name": "USER_WRITE", "description": "..." }
+# ]
+
+
+### 1.2.3 - Récupérer une permission par ID
+GET {{baseUrl}}/api/permissions/1
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 1,
+#     "category": "USER",
+#     "name": "USER_READ",
+#     "description": "Permet de consulter les utilisateurs"
+# }
+
+
+### 1.2.4 - Récupérer les permissions par catégorie
+GET {{baseUrl}}/api/permissions/category/USER
+# RÉPONSE ATTENDUE : 200 OK
+# [
+#     { "id": 1, "category": "USER", "name": "USER_READ", "description": "..." },
+#     { "id": 2, "category": "USER", "name": "USER_WRITE", "description": "..." },
+#     { "id": 3, "category": "USER", "name": "USER_DELETE", "description": "..." }
+# ]
+
+
+### 1.2.5 - Erreur : Permission non trouvée
+GET {{baseUrl}}/api/permissions/999
+# RÉPONSE ATTENDUE : 404 Not Found
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 404,
+#     "error": "Not Found",
+#     "message": "Permission ID: 999 non trouvée en base de données"
+# }
+
+
+### 1.2.6 - Trier les permissions par catégorie
+GET {{baseUrl}}/api/permissions?sort=category,asc&sort=name,asc
+# RÉPONSE ATTENDUE : 200 OK
+
+
+# ---------- 1.3 TESTS DE MISE À JOUR (PUT) ----------
+
+### 1.3.1 - Modifier une permission
+PUT {{baseUrl}}/api/permissions/1
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_READ_UPDATED",
+    "description": "Permission mise à jour"
+}
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 1,
+#     "category": "USER",
+#     "name": "USER_READ_UPDATED",
+#     "description": "Permission mise à jour"
+# }
+
+
+### 1.3.2 - Erreur : Nom déjà utilisé
+PUT {{baseUrl}}/api/permissions/1
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_WRITE",
+    "description": "Nom déjà utilisé"
+}
+# RÉPONSE ATTENDUE : 409 Conflict
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 409,
+#     "error": "Conflict",
+#     "message": "La permission USER_WRITE existe déjà"
+# }
+
+
+### 1.3.3 - Erreur : Permission non trouvée
+PUT {{baseUrl}}/api/permissions/999
+Content-Type: application/json
+
+{
+    "category": "USER",
+    "name": "USER_TEST",
+    "description": "Inexistante"
+}
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ---------- 1.4 TESTS DE SUPPRESSION (DELETE) ----------
+
+### 1.4.1 - Supprimer une permission
+DELETE {{baseUrl}}/api/permissions/6
+# RÉPONSE ATTENDUE : 204 No Content
+
+
+### 1.4.2 - Erreur : Permission non trouvée
+DELETE {{baseUrl}}/api/permissions/999
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ================================================================
+# 2. ROLE CONTROLLER
+# ================================================================
+
+
+# ---------- 2.1 TESTS DE CRÉATION (POST) ----------
+
+### 2.1.1 - Créer ROLE_SUPER_ADMIN
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "ROLE_SUPER_ADMIN",
+    "description": "Super Administrateur - Accès total",
+    "permissionIds": [1, 2, 3, 4, 5]
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 1,
+#     "name": "ROLE_SUPER_ADMIN",
+#     "description": "Super Administrateur - Accès total",
+#     "permissions": [...]
+# }
+
+
+### 2.1.2 - Créer ROLE_ADMIN
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "ROLE_ADMIN",
+    "description": "Administrateur - Gestion complète",
+    "permissionIds": [1, 2, 3]
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 2,
+#     "name": "ROLE_ADMIN",
+#     "description": "Administrateur - Gestion complète"
+# }
+
+
+### 2.1.3 - Créer ROLE_MANAGER
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "ROLE_MANAGER",
+    "description": "Manager - Gestion des utilisateurs",
+    "permissionIds": [1, 2]
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 3,
+#     "name": "ROLE_MANAGER",
+#     "description": "Manager - Gestion des utilisateurs"
+# }
+
+
+### 2.1.4 - Créer ROLE_USER
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "ROLE_USER",
+    "description": "Utilisateur standard",
+    "permissionIds": [1]
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 4,
+#     "name": "ROLE_USER",
+#     "description": "Utilisateur standard"
+# }
+
+
+### 2.1.5 - Créer ROLE_GUEST
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "ROLE_GUEST",
+    "description": "Invité - Accès limité",
+    "permissionIds": []
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 5,
+#     "name": "ROLE_GUEST",
+#     "description": "Invité - Accès limité"
+# }
+
+
+### 2.1.6 - Erreur : Rôle déjà existant
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "ROLE_ADMIN",
+    "description": "Duplicata",
+    "permissionIds": []
+}
+# RÉPONSE ATTENDUE : 409 Conflict
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 409,
+#     "error": "Conflict",
+#     "message": "Le rôle ROLE_ADMIN existe déjà"
+# }
+
+
+### 2.1.7 - Erreur : Validation échouée
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+
+{
+    "name": "",
+    "description": "Nom vide",
+    "permissionIds": []
+}
+# RÉPONSE ATTENDUE : 400 Bad Request
+
+
+# ---------- 2.2 TESTS DE LECTURE (GET) ----------
+
+### 2.2.1 - Récupérer tous les rôles (paginé)
+GET {{baseUrl}}/api/roles?page=0&size=10&sort=name,asc
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "content": [...],
+#     "totalElements": 5,
+#     "totalPages": 1
+# }
+
+
+### 2.2.2 - Récupérer tous les rôles (sans pagination)
+GET {{baseUrl}}/api/roles/all
+# RÉPONSE ATTENDUE : 200 OK
+# [
+#     { "id": 1, "name": "ROLE_SUPER_ADMIN", "description": "..." },
+#     { "id": 2, "name": "ROLE_ADMIN", "description": "..." }
+# ]
+
+
+### 2.2.3 - Récupérer un rôle par ID
+GET {{baseUrl}}/api/roles/1
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 1,
+#     "name": "ROLE_SUPER_ADMIN",
+#     "description": "Super Administrateur - Accès total",
+#     "permissions": [...]
+# }
+
+
+### 2.2.4 - Récupérer un rôle par nom
+GET {{baseUrl}}/api/roles/name/ROLE_ADMIN
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 2,
+#     "name": "ROLE_ADMIN",
+#     "description": "Administrateur - Gestion complète"
+# }
+
+
+### 2.2.5 - Compter les utilisateurs d'un rôle
+GET {{baseUrl}}/api/roles/1/count-users
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "roleId": 1,
+#     "roleName": "ROLE_SUPER_ADMIN",
+#     "userCount": 0
+# }
+
+
+### 2.2.6 - Erreur : Rôle non trouvé
+GET {{baseUrl}}/api/roles/999
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ---------- 2.3 TESTS DE MISE À JOUR (PUT) ----------
+
+### 2.3.1 - Modifier un rôle
+PUT {{baseUrl}}/api/roles/2
+Content-Type: application/json
+
+{
+    "name": "ROLE_ADMIN_UPDATED",
+    "description": "Administrateur avec nouvelles permissions",
+    "permissionIds": [1, 2, 3, 4]
+}
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 2,
+#     "name": "ROLE_ADMIN_UPDATED",
+#     "description": "Administrateur avec nouvelles permissions"
+# }
+
+
+### 2.3.2 - Erreur : Nom déjà utilisé
+PUT {{baseUrl}}/api/roles/2
+Content-Type: application/json
+
+{
+    "name": "ROLE_SUPER_ADMIN",
+    "description": "Nom déjà utilisé",
+    "permissionIds": []
+}
+# RÉPONSE ATTENDUE : 409 Conflict
+
+
+# ---------- 2.4 TESTS DE GESTION DES PERMISSIONS ----------
+
+### 2.4.1 - Ajouter une permission à un rôle
+POST {{baseUrl}}/api/roles/2/permissions/3
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 2.4.2 - Erreur : Permission déjà assignée
+POST {{baseUrl}}/api/roles/2/permissions/1
+# RÉPONSE ATTENDUE : 409 Conflict
+
+
+### 2.4.3 - Retirer une permission d'un rôle
+DELETE {{baseUrl}}/api/roles/2/permissions/3
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 2.4.4 - Erreur : Permission non assignée
+DELETE {{baseUrl}}/api/roles/2/permissions/99
+# RÉPONSE ATTENDUE : 400 Bad Request
+
+
+# ---------- 2.5 TESTS DE SUPPRESSION (DELETE) ----------
+
+### 2.5.1 - Supprimer un rôle
+DELETE {{baseUrl}}/api/roles/5
+# RÉPONSE ATTENDUE : 204 No Content
+
+
+### 2.5.2 - Erreur : Rôle non trouvé
+DELETE {{baseUrl}}/api/roles/999
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+### 2.5.3 - Erreur : Rôle utilisé par des utilisateurs
+DELETE {{baseUrl}}/api/roles/1
+# RÉPONSE ATTENDUE : 409 Conflict (si des utilisateurs ont ce rôle)
+
+
+# ================================================================
+# 3. UTILISATEUR CONTROLLER
+# ================================================================
+
+
+# ---------- 3.1 TESTS DE CRÉATION (POST) ----------
+
+### 3.1.1 - Créer un utilisateur
+POST {{baseUrl}}/api/utilisateurs
+Content-Type: application/json
+
+{
+    "prenom": "Jean",
+    "nom": "Dupont",
+    "email": "jean.dupont@email.com",
+    "motDePasse": "Password123@"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 1,
+#     "prenom": "Jean",
+#     "nom": "Dupont",
+#     "email": "jean.dupont@email.com",
+#     "enabled": true,
+#     "roles": ["ROLE_USER"],
+#     "permissions": [],
+#     "createdAt": "2026-08-25T10:00:00"
+# }
+
+
+### 3.1.2 - Créer un deuxième utilisateur
+POST {{baseUrl}}/api/utilisateurs
+Content-Type: application/json
+
+{
+    "prenom": "Marie",
+    "nom": "Martin",
+    "email": "marie.martin@email.com",
+    "motDePasse": "Password123@"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 2,
+#     "prenom": "Marie",
+#     "nom": "Martin",
+#     "email": "marie.martin@email.com"
+# }
+
+
+### 3.1.3 - Créer un troisième utilisateur
+POST {{baseUrl}}/api/utilisateurs
+Content-Type: application/json
+
+{
+    "prenom": "Pierre",
+    "nom": "Durand",
+    "email": "pierre.durand@email.com",
+    "motDePasse": "Password123@"
+}
+# RÉPONSE ATTENDUE : 201 Created
+# {
+#     "id": 3,
+#     "prenom": "Pierre",
+#     "nom": "Durand",
+#     "email": "pierre.durand@email.com"
+# }
+
+
+### 3.1.4 - Erreur : Email déjà existant
+POST {{baseUrl}}/api/utilisateurs
+Content-Type: application/json
+
+{
+    "prenom": "Jean",
+    "nom": "Dupont",
+    "email": "jean.dupont@email.com",
+    "motDePasse": "Password123@"
+}
+# RÉPONSE ATTENDUE : 409 Conflict
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 409,
+#     "error": "Conflict",
+#     "message": "L'email jean.dupont@email.com est déjà utilisé par un autre utilisateur"
+# }
+
+
+### 3.1.5 - Erreur : Validation échouée
+POST {{baseUrl}}/api/utilisateurs
+Content-Type: application/json
+
+{
+    "prenom": "",
+    "nom": "",
+    "email": "email.invalide",
+    "motDePasse": "123"
+}
+# RÉPONSE ATTENDUE : 400 Bad Request
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 400,
+#     "error": "Bad Request",
+#     "message": "Validation échouée : prenom: Le prénom est obligatoire, nom: Le nom est obligatoire, email: L'email doit être valide, motDePasse: Le mot de passe doit contenir au moins 8 caractères"
+# }
+
+
+### 3.1.6 - Erreur : Mot de passe trop faible
+POST {{baseUrl}}/api/utilisateurs
+Content-Type: application/json
+
+{
+    "prenom": "Test",
+    "nom": "User",
+    "email": "test@email.com",
+    "motDePasse": "password"
+}
+# RÉPONSE ATTENDUE : 400 Bad Request
+# {
+#     "timestamp": "2026-08-25T10:00:00",
+#     "status": 400,
+#     "error": "Bad Request",
+#     "message": "Validation échouée : motDePasse: Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial"
+# }
+
+
+# ---------- 3.2 TESTS DE LECTURE (GET) ----------
+
+### 3.2.1 - Récupérer tous les utilisateurs (paginé)
+GET {{baseUrl}}/api/utilisateurs?page=0&size=10&sort=nom,asc
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "content": [
+#         { "id": 1, "prenom": "Jean", "nom": "Dupont", "email": "jean.dupont@email.com", "enabled": true },
+#         { "id": 2, "prenom": "Marie", "nom": "Martin", "email": "marie.martin@email.com", "enabled": true }
+#     ],
+#     "totalElements": 3,
+#     "totalPages": 1,
+#     "size": 10
+# }
+
+
+### 3.2.2 - Récupérer un utilisateur par ID
+GET {{baseUrl}}/api/utilisateurs/1
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 1,
+#     "prenom": "Jean",
+#     "nom": "Dupont",
+#     "email": "jean.dupont@email.com",
+#     "enabled": true,
+#     "compteNonVerrouille": true,
+#     "compteNonExpire": true,
+#     "credentialsNonExpire": true,
+#     "roles": ["ROLE_USER"],
+#     "permissions": [],
+#     "createdAt": "2026-08-25T10:00:00"
+# }
+
+
+### 3.2.3 - Récupérer un utilisateur par email
+GET {{baseUrl}}/api/utilisateurs/email/jean.dupont@email.com
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 1,
+#     "prenom": "Jean",
+#     "nom": "Dupont",
+#     "email": "jean.dupont@email.com"
+# }
+
+
+### 3.2.4 - Erreur : Utilisateur non trouvé
+GET {{baseUrl}}/api/utilisateurs/999
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+### 3.2.5 - Erreur : Email non trouvé
+GET {{baseUrl}}/api/utilisateurs/email/inexistant@email.com
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ---------- 3.3 TESTS DE MISE À JOUR (PUT) ----------
+
+### 3.3.1 - Modifier un utilisateur
+PUT {{baseUrl}}/api/utilisateurs/1
+Content-Type: application/json
+
+{
+    "prenom": "Jean-Pierre",
+    "nom": "Dupont",
+    "email": "jeanpierre.dupont@email.com",
+    "motDePasse": "NewPassword123@"
+}
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "id": 1,
+#     "prenom": "Jean-Pierre",
+#     "nom": "Dupont",
+#     "email": "jeanpierre.dupont@email.com"
+# }
+
+
+### 3.3.2 - Erreur : Email déjà utilisé
+PUT {{baseUrl}}/api/utilisateurs/2
+Content-Type: application/json
+
+{
+    "prenom": "Marie",
+    "nom": "Martin",
+    "email": "jeanpierre.dupont@email.com",
+    "motDePasse": "Password123@"
+}
+# RÉPONSE ATTENDUE : 409 Conflict
+
+
+# ---------- 3.4 TESTS DE GESTION DES ÉTATS (PATCH) ----------
+
+### 3.4.1 - Désactiver un utilisateur
+PATCH {{baseUrl}}/api/utilisateurs/1/desactiver
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.4.2 - Erreur : Utilisateur déjà désactivé
+PATCH {{baseUrl}}/api/utilisateurs/1/desactiver
+# RÉPONSE ATTENDUE : 400 Bad Request
+
+
+### 3.4.3 - Activer un utilisateur
+PATCH {{baseUrl}}/api/utilisateurs/1/activer
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.4.4 - Verrouiller un utilisateur
+PATCH {{baseUrl}}/api/utilisateurs/2/verrouiller
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.4.5 - Déverrouiller un utilisateur
+PATCH {{baseUrl}}/api/utilisateurs/2/deverrouiller
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.4.6 - Expirer un utilisateur
+PATCH {{baseUrl}}/api/utilisateurs/3/expirer
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.4.7 - Renouveler un utilisateur
+PATCH {{baseUrl}}/api/utilisateurs/3/renouveler
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.4.8 - Erreur : Utilisateur non trouvé
+PATCH {{baseUrl}}/api/utilisateurs/999/activer
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ---------- 3.5 TESTS DE GESTION DES RÔLES ----------
+
+### 3.5.1 - Assigner un rôle à un utilisateur
+POST {{baseUrl}}/api/utilisateurs/1/roles/ROLE_ADMIN
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.5.2 - Erreur : Rôle déjà assigné
+POST {{baseUrl}}/api/utilisateurs/1/roles/ROLE_ADMIN
+# RÉPONSE ATTENDUE : 409 Conflict
+
+
+### 3.5.3 - Assigner un autre rôle
+POST {{baseUrl}}/api/utilisateurs/1/roles/ROLE_MANAGER
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.5.4 - Retirer un rôle
+DELETE {{baseUrl}}/api/utilisateurs/1/roles/ROLE_MANAGER
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.5.5 - Erreur : Rôle non trouvé
+POST {{baseUrl}}/api/utilisateurs/1/roles/ROLE_INEXISTANT
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ---------- 3.6 TESTS DE GESTION DES PERMISSIONS DIRECTES ----------
+
+### 3.6.1 - Ajouter une permission directe
+POST {{baseUrl}}/api/utilisateurs/1/permissions/USER_DELETE
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.6.2 - Erreur : Permission déjà assignée
+POST {{baseUrl}}/api/utilisateurs/1/permissions/USER_DELETE
+# RÉPONSE ATTENDUE : 409 Conflict
+
+
+### 3.6.3 - Retirer une permission directe
+DELETE {{baseUrl}}/api/utilisateurs/1/permissions/USER_DELETE
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.6.4 - Erreur : Permission non assignée
+DELETE {{baseUrl}}/api/utilisateurs/1/permissions/USER_DELETE
+# RÉPONSE ATTENDUE : 400 Bad Request
+
+
+# ---------- 3.7 TESTS DE RECHERCHE ----------
+
+### 3.7.1 - Rechercher par mot-clé (prénom)
+GET {{baseUrl}}/api/utilisateurs/search?keyword=Jean
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "content": [
+#         { "id": 1, "prenom": "Jean-Pierre", "nom": "Dupont", "email": "jeanpierre.dupont@email.com" }
+#     ],
+#     "totalElements": 1
+# }
+
+
+### 3.7.2 - Rechercher par mot-clé (nom)
+GET {{baseUrl}}/api/utilisateurs/search?keyword=Martin
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "content": [
+#         { "id": 2, "prenom": "Marie", "nom": "Martin", "email": "marie.martin@email.com" }
+#     ],
+#     "totalElements": 1
+# }
+
+
+### 3.7.3 - Rechercher avec pagination
+GET {{baseUrl}}/api/utilisateurs/search?keyword=a&page=0&size=5
+# RÉPONSE ATTENDUE : 200 OK
+
+
+### 3.7.4 - Récupérer les utilisateurs par rôle
+GET {{baseUrl}}/api/utilisateurs/role/ROLE_ADMIN
+# RÉPONSE ATTENDUE : 200 OK
+# {
+#     "content": [
+#         { "id": 1, "prenom": "Jean-Pierre", "nom": "Dupont", "roles": ["ROLE_ADMIN", "ROLE_USER"] }
+#     ],
+#     "totalElements": 1
+# }
+
+
+### 3.7.5 - Récupérer les utilisateurs par rôle (paginé)
+GET {{baseUrl}}/api/utilisateurs/role/ROLE_USER?page=0&size=10
+# RÉPONSE ATTENDUE : 200 OK
+
+
+# ---------- 3.8 TESTS DE SUPPRESSION (DELETE) ----------
+
+### 3.8.1 - Supprimer un utilisateur
+DELETE {{baseUrl}}/api/utilisateurs/3
+# RÉPONSE ATTENDUE : 204 No Content
+
+
+### 3.8.2 - Erreur : Utilisateur non trouvé
+DELETE {{baseUrl}}/api/utilisateurs/999
+# RÉPONSE ATTENDUE : 404 Not Found
+
+
+# ================================================================
+# RÉSUMÉ DES TESTS
+# ================================================================
+#
+# Permission Controller : 30+ tests
+# Role Controller       : 25+ tests
+# Utilisateur Controller : 35+ tests
+# TOTAL                 : 90+ tests
+#
+# ================================================================
+# FIN DU GUIDE DE TESTS
+# ================================================================

@@ -1,0 +1,13 @@
+ÉTAPE 1 : Ajouter @Schema sur PermissionRequestDTO
+ÉTAPE 2 : Ajouter @Schema sur PermissionDTO
+ÉTAPE 3 : Ajouter @Schema sur RoleRequestDTO
+ÉTAPE 4 : Ajouter @Schema sur RoleDTO
+ÉTAPE 5 : Ajouter @Schema sur UtilisateurRequestDTO
+ÉTAPE 6 : Ajouter @Schema sur UtilisateurResponseDTO
+ÉTAPE 7 : Ajouter SecurityRequirement dans SwaggerConfig
+ÉTAPE 8 : Tester GET /api/permissions
+ÉTAPE 9 : Tester POST /api/permissions
+ÉTAPE 10 : Tester GET /api/roles
+ÉTAPE 11 : Tester POST /api/roles
+ÉTAPE 12 : Tester GET /api/utilisateurs
+ÉTAPE 13 : Tester POST /api/utilisateurs

@@ -1,0 +1,10 @@
+1. ✅ Logs structurés (JSON)
+2. ✅ Rate Limiting (Limitation de requêtes)
+3. ✅ Actuator / Monitoring
+4. ✅ Email (Mot de passe oublié)
+5. ✅ Validation avancée
+6. ✅ API Versioning
+7. ✅ Async / File upload
+8. ✅ I18N (Internationalisation)
+9. ✅ GraphQL
+10. ✅ WebSocket
