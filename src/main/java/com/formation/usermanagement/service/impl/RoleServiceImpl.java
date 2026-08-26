@@ -12,6 +12,8 @@ import com.formation.usermanagement.repository.RoleRepository;
 import com.formation.usermanagement.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,7 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "roles",allEntries = true)
     public RoleDTO creerRole(RoleRequestDTO dto) {
         log.info("=== DÉBUT création rôle ===");
         log.info("📝 Nom du rôle : {}", dto.getName());
@@ -112,6 +115,7 @@ public class RoleServiceImpl implements RoleService {
      * Récupère un rôle par son ID
      */
     @Override
+    @Cacheable(value = "roles",key = "#id")
     public RoleDTO getRole(Long id) {
         log.debug("🔍 Récupération du rôle avec ID : {}", id);
 
@@ -128,6 +132,7 @@ public class RoleServiceImpl implements RoleService {
      * Récupère un rôle par son nom
      */
     @Override
+    @Cacheable(value = "roles",key = "#name")
     public RoleDTO getRoleByName(String name) {
         log.debug("🔍 Récupération du rôle avec nom : {}", name);
 
@@ -180,6 +185,7 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "roles",allEntries = true)
     public RoleDTO updateRole(Long id, RoleRequestDTO dto) {
         log.info("=== DÉBUT mise à jour rôle ID : {} ===", id);
 
@@ -238,6 +244,7 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "roles",allEntries = true)
     public void supprimerRole(Long id) {
         log.info("🗑️ Suppression du rôle avec ID : {}", id);
 
@@ -271,6 +278,7 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "roles", allEntries = true)  // ← AJOUTER
     public void ajouterPermission(Long roleId, Long permissionId) {
         log.info("📋 Ajout de la permission ID {} au rôle ID {}", permissionId, roleId);
 
@@ -308,6 +316,8 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "roles", allEntries = true)  // ← AJOUTER
+
     public void retirerPermission(Long roleId, Long permissionId) {
         log.info("🗑️ Retrait de la permission ID {} du rôle ID {}", permissionId, roleId);
 

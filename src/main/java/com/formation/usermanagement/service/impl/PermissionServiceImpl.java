@@ -15,6 +15,8 @@ import com.formation.usermanagement.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -119,6 +121,7 @@ public class PermissionServiceImpl implements PermissionService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "permissions", allEntries = true)  // ← DOIT ÊTRE PRÉSENT
     public PermissionDTO creerPermission(@Valid PermissionRequestDTO dto) {
         log.info("=== DÉBUT création permission ===");
         log.info("📝 Nom : {}", dto.getName());
@@ -188,6 +191,7 @@ public class PermissionServiceImpl implements PermissionService {
      * ✅ SUCCÈS : PermissionDTO
      */
     @Override
+    @Cacheable(value = "permissions",key = "#id")
     public PermissionDTO getPermission(Long id) {
         log.debug("🔍 Récupération de la permission avec ID : {}", id);
 
@@ -218,6 +222,8 @@ public class PermissionServiceImpl implements PermissionService {
      * ✅ SUCCÈS : PermissionDTO
      */
     @Override
+    @Cacheable(value = "permissions",key = "#name")
+
     public PermissionDTO getPermissionByName(String name) {
         log.debug("🔍 Récupération de la permission avec nom : {}", name);
 
@@ -301,6 +307,7 @@ public class PermissionServiceImpl implements PermissionService {
      * @return Liste des permissions de cette catégorie
      */
     @Override
+    @Cacheable(value = "permissionsByCategory",key ="#category" )
     public List<PermissionDTO> getPermissionsByCategory(String category) {
         log.debug("📋 Récupération des permissions pour la catégorie : {}", category);
 
@@ -337,6 +344,7 @@ public class PermissionServiceImpl implements PermissionService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "permissions",allEntries = true)
     public PermissionDTO updatePermission(Long id, PermissionRequestDTO dto) {
         log.info("=== DÉBUT mise à jour permission ID : {} ===", id);
 
@@ -423,6 +431,8 @@ public class PermissionServiceImpl implements PermissionService {
      */
     @Override
     @Transactional
+    @CacheEvict(value = "permissions",allEntries = true)
+
     public void supprimerPermission(Long id) {
         log.info("🗑️ Suppression de la permission avec ID : {}", id);
 
@@ -471,6 +481,7 @@ public class PermissionServiceImpl implements PermissionService {
      * ✅ RETOUR : boolean (true si la permission existe)
      */
     @Override
+
     public boolean existeParNom(String name) {
         return permissionRepository.existsByName(name);
     }
@@ -487,6 +498,7 @@ public class PermissionServiceImpl implements PermissionService {
      * ✅ RETOUR : boolean
      */
     @Override
+
     public boolean existeParCategoryEtNom(String category, String name) {
         return permissionRepository.existsByCategoryAndName(category, name);
     }
