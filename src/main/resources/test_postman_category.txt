@@ -1,0 +1,194 @@
+# ================================================================
+# GUIDE DE TESTS CATEGORY - POSTMAN
+# ================================================================
+
+# ÉTAPE 1 : SE CONNECTER
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "motDePasse": "Admin123!"
+}
+
+# Résultat : Récupérer le token dans la réponse
+# Copier le token et le mettre dans adminToken
+
+
+# ================================================================
+# 1. TESTS GET /api/categories
+# ================================================================
+
+### 1.1 - Récupérer toutes les catégories (paginé)
+GET {{baseUrl}}/api/categories?page=0&size=10
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec liste des catégories
+
+### 1.2 - Récupérer page 2
+GET {{baseUrl}}/api/categories?page=1&size=5
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec 5 catégories
+
+### 1.3 - Trier par nom ascendant
+GET {{baseUrl}}/api/categories?sort=name,asc
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec catégories triées
+
+### 1.4 - Trier par nom descendant
+GET {{baseUrl}}/api/categories?sort=name,desc
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec catégories triées
+
+### 1.5 - Sans token (Erreur 401)
+GET {{baseUrl}}/api/categories
+# Résultat : 401 Unauthorized
+
+
+# ================================================================
+# 2. TESTS GET /api/categories/all
+# ================================================================
+
+### 2.1 - Récupérer toutes les catégories
+GET {{baseUrl}}/api/categories/all
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec toutes les catégories
+
+
+# ================================================================
+# 3. TESTS GET /api/categories/summary
+# ================================================================
+
+### 3.1 - Récupérer les catégories (version résumée)
+GET {{baseUrl}}/api/categories/summary
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec {id, name} uniquement
+
+
+# ================================================================
+# 4. TESTS GET /api/categories/{id}
+# ================================================================
+
+### 4.1 - Récupérer catégorie ID 1
+GET {{baseUrl}}/api/categories/1
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec détails de la catégorie
+
+### 4.2 - Récupérer catégorie inexistante (Erreur 404)
+GET {{baseUrl}}/api/categories/999
+Authorization: Bearer {{adminToken}}
+# Résultat : 404 Not Found
+
+
+# ================================================================
+# 5. TESTS GET /api/categories/name/{name}
+# ================================================================
+
+### 5.1 - Récupérer par nom (Électronique)
+GET {{baseUrl}}/api/categories/name/%C3%89lectronique
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec la catégorie
+
+### 5.2 - Récupérer par nom inexistant (Erreur 404)
+GET {{baseUrl}}/api/categories/name/Inexistant
+Authorization: Bearer {{adminToken}}
+# Résultat : 404 Not Found
+
+
+# ================================================================
+# 6. TESTS POST /api/categories (Création)
+# ================================================================
+
+### 6.1 - Créer une catégorie avec succès
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "Jardinage",
+    "description": "Outils et accessoires de jardin"
+}
+# Résultat : 201 Created avec la catégorie créée
+
+### 6.2 - Créer une catégorie avec un nom existant (Erreur 409)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "Électronique",
+    "description": "Duplicata"
+}
+# Résultat : 409 Conflict
+
+### 6.3 - Créer avec des données invalides (Erreur 400)
+POST {{baseUrl}}/api/categories
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "",
+    "description": "Nom vide"
+}
+# Résultat : 400 Bad Request
+
+
+# ================================================================
+# 7. TESTS PUT /api/categories/{id} (Modification)
+# ================================================================
+
+### 7.1 - Modifier une catégorie
+PUT {{baseUrl}}/api/categories/11
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "Jardinage et Plantes",
+    "description": "Outils et accessoires de jardin"
+}
+# Résultat : 200 OK avec la catégorie modifiée
+
+### 7.2 - Modifier une catégorie inexistante (Erreur 404)
+PUT {{baseUrl}}/api/categories/999
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "name": "Inexistant",
+    "description": "Inexistant"
+}
+# Résultat : 404 Not Found
+
+
+# ================================================================
+# 8. TESTS DELETE /api/categories/{id} (Suppression)
+# ================================================================
+
+### 8.1 - Supprimer une catégorie
+DELETE {{baseUrl}}/api/categories/12
+Authorization: Bearer {{adminToken}}
+# Résultat : 204 No Content
+
+### 8.2 - Supprimer une catégorie avec produits (Erreur 409)
+DELETE {{baseUrl}}/api/categories/1
+Authorization: Bearer {{adminToken}}
+# Résultat : 409 Conflict (la catégorie a des produits)
+
+
+# ================================================================
+# 9. TESTS GET /api/categories/search
+# ================================================================
+
+### 9.1 - Rechercher par mot-clé "Electronique"
+GET {{baseUrl}}/api/categories/search?keyword=Electronique
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec catégories contenant le mot-clé
+
+### 9.2 - Rechercher avec pagination
+GET {{baseUrl}}/api/categories/search?keyword=a&page=0&size=5
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec résultats paginés
+
+### 9.3 - Rechercher avec mot-clé vide
+GET {{baseUrl}}/api/categories/search?keyword=
+Authorization: Bearer {{adminToken}}
+# Résultat : 200 OK avec toutes les catégories
