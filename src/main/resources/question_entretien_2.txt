@@ -1,0 +1,1156 @@
+PARTIE 1 : Questions Spring Boot (10 questions)
+PARTIE 2 : Questions JPA/Hibernate (8 questions)
+PARTIE 3 : Questions Spring Security (8 questions)
+PARTIE 4 : Questions JWT (7 questions)
+PARTIE 5 : Questions Cache (6 questions)
+PARTIE 6 : Questions Architecture (7 questions)
+PARTIE 7 : Questions Code (8 questions)
+PARTIE 8 : Questions Générales (10 questions)
+PARTIE 9 : Questions Avancées (5 questions)
+
+
+PARTIE 1 : QUESTIONS SPRING BOOT
+Q1 : Qu'est-ce que Spring Boot et pourquoi l'utiliser ?
+Réponse :
+Spring Boot est un framework qui facilite la création d'applications Spring avec configuration automatique et serveur intégré.
+
+Avantages :
+
+✅ Configuration automatique : Spring configure les beans par défaut
+
+✅ Serveur intégré : Tomcat, Jetty ou Undertow intégrés
+
+✅ Starters : Dépendances pré-configurées
+
+✅ Production-ready : Actuator, métriques, health checks
+
+✅ Pas de code XML : Configuration Java uniquement
+
+✅ Facile à déployer : Un simple JAR
+
+Exemple :
+
+java
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+Q2 : Quelle est la différence entre Spring Boot et Spring MVC ?
+Réponse :
+
+Spring Boot	Spring MVC
+Framework complet	Module de Spring
+Configuration automatique	Configuration manuelle
+Serveur intégré	Nécessite un serveur externe
+Démarrage rapide	Démarrage plus lent
+Production-ready	Nécessite des configurations supplémentaires
+Annotation @SpringBootApplication	Annotation @EnableWebMvc
+Conclusion : Spring MVC est un module de Spring pour les applications web. Spring Boot est un framework qui utilise Spring MVC avec configuration automatique.
+
+Q3 : Qu'est-ce que l'annotation @SpringBootApplication ?
+Réponse :
+@SpringBootApplication est une annotation composite qui combine trois annotations :
+
+java
+@SpringBootApplication
+public class Application {
+    // ...
+}
+Équivaut à :
+
+java
+@Configuration           // Classe de configuration
+@EnableAutoConfiguration // Configuration automatique
+@ComponentScan          // Scan des composants
+public class Application {
+    // ...
+}
+Q4 : Qu'est-ce que les Spring Starters ?
+Réponse :
+Les starters sont des dépendances pré-configurées qui simplifient l'ajout de fonctionnalités.
+
+xml
+<!-- API Web (Spring MVC + Tomcat + Jackson) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<!-- Base de données (Spring Data JPA + Hibernate) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+
+<!-- Sécurité (Spring Security) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+
+<!-- Tests -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+</dependency>
+Q5 : Comment fonctionne la configuration automatique ?
+Réponse :
+Spring Boot analyse les dépendances dans le classpath et configure automatiquement les beans.
+
+Exemple :
+
+Si spring-boot-starter-web est présent → Configure DispatcherServlet, Tomcat, Jackson
+
+Si spring-boot-starter-data-jpa est présent → Configure DataSource, EntityManagerFactory
+
+Si spring-boot-starter-security est présent → Configure SecurityFilterChain
+
+Désactiver une configuration automatique :
+
+java
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+public class Application {
+    // ...
+}
+Q6 : Qu'est-ce que l'Actuator ?
+Réponse :
+Actuator fournit des endpoints pour surveiller l'application en production.
+
+xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+Endpoints disponibles :
+
+Endpoint	Description
+/actuator/health	État de l'application
+/actuator/info	Informations de l'application
+/actuator/metrics	Métriques (CPU, mémoire, requêtes)
+/actuator/env	Variables d'environnement
+/actuator/loggers	Logs des classes
+Q7 : Quelle est la différence entre @Component, @Service, @Repository, @Controller ?
+Réponse :
+
+Annotation	Utilisation
+@Component	Générique, pour n'importe quel bean
+@Service	Couche métier (logique)
+@Repository	Couche de persistance (base de données)
+@Controller	Couche web (gestion des requêtes HTTP)
+@RestController	API REST (retourne du JSON)
+java
+@Component  // Bean générique
+public class MonComponent { }
+
+@Service    // Bean de service
+public class UserService { }
+
+@Repository // Bean de persistance
+public interface UserRepository { }
+
+@RestController // Bean REST
+public class UserController { }
+Q8 : Qu'est-ce que @Autowired et comment fonctionne-t-il ?
+Réponse :
+@Autowired injecte automatiquement les dépendances.
+
+java
+@Service
+public class UserService {
+
+    // 1. Field Injection (⚠️ Déconseillé)
+    @Autowired
+    private UserRepository userRepository;
+
+    // 2. Setter Injection
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    // 3. Constructor Injection (✅ Recommandé)
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+Avec Lombok (mieux) :
+
+java
+@Service
+@RequiredArgsConstructor  // Génère le constructeur avec injection
+public class UserService {
+    private final UserRepository userRepository;  // final = injection automatique
+}
+Q9 : Quelle est la différence entre @Autowired et @Resource ?
+Réponse :
+
+@Autowired	@Resource
+Par type (par défaut)	Par nom (par défaut)
+Spring	Java (JSR-250)
+@Autowired(required=false)	@Resource(name="monBean")
+Peut être utilisé sur n'importe quel champ/setter	Peut être utilisé sur n'importe quel champ/setter
+java
+// @Autowired : Par type
+@Autowired
+private UserService userService;  // Cherche un bean de type UserService
+
+// @Resource : Par nom
+@Resource(name = "userServiceImpl")
+private UserService userService;  // Cherche un bean nommé "userServiceImpl"
+Q10 : Qu'est-ce que Spring Profiles ?
+Réponse :
+Les profiles permettent d'avoir des configurations différentes selon l'environnement.
+
+properties
+# application.properties
+spring.profiles.active=dev
+
+# application-dev.properties
+server.port=8080
+spring.datasource.url=jdbc:h2:mem:testdb
+
+# application-prod.properties
+server.port=80
+spring.datasource.url=jdbc:mysql://localhost:3306/prod
+Utilisation :
+
+java
+@Configuration
+@Profile("dev")
+public class DevConfig { }
+
+@Configuration
+@Profile("prod")
+public class ProdConfig { }
+PARTIE 2 : QUESTIONS JPA / HIBERNATE
+Q11 : Qu'est-ce que Hibernate ?
+Réponse :
+Hibernate est l'implémentation la plus populaire de JPA (Java Persistence API).
+
+Caractéristiques :
+
+✅ Mapping objet-relationnel
+
+✅ Gestion automatique des relations (OneToMany, ManyToMany)
+
+✅ Cache (premier et deuxième niveau)
+
+✅ Requêtes JPQL/HQL
+
+✅ Optimistic Locking avec @Version
+
+java
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
+}
+Q12 : Quelle est la différence entre JPA, Hibernate et Spring Data JPA ?
+Réponse :
+
+JPA	Hibernate	Spring Data JPA
+Spécification (contrat)	Implémentation (code)	Abstraction (couche)
+javax.persistence.*	org.hibernate.*	org.springframework.data.jpa.*
+Définit les règles	Exécute les règles	Simplifie l'accès
+Exemple :
+
+java
+// JPA : Spécification
+@Entity
+public class User { }
+
+// Hibernate : Implémentation
+// (transparent, utilise les annotations JPA)
+
+// Spring Data JPA : Abstraction
+public interface UserRepository extends JpaRepository<User, Long> {
+    // Méthodes générées automatiquement
+    Optional<User> findByEmail(String email);
+}
+Q13 : Qu'est-ce que le Lazy Loading et Eager Loading ?
+Réponse :
+
+Lazy Loading	Eager Loading
+Charge à la demande	Charge immédiatement
+Moins de requêtes au départ	Plus de requêtes au départ
+Évite le surcharge	Peut causer le N+1
+FetchType.LAZY (Défaut)	FetchType.EAGER
+java
+// Lazy Loading (défaut)
+@OneToMany(fetch = FetchType.LAZY)
+private List<Order> orders;  // Les orders sont chargés seulement quand on y accède
+
+// Eager Loading
+@ManyToOne(fetch = FetchType.EAGER)
+private User user;  // Le user est chargé immédiatement
+Recommandation : Utiliser Lazy Loading et JOIN FETCH pour les besoins spécifiques.
+
+Q14 : Qu'est-ce que le Problème N+1 et comment le résoudre ?
+Réponse :
+
+Problème : 1 requête pour l'entité + N requêtes pour chaque relation.
+
+sql
+-- 🔴 MAUVAIS (N+1)
+SELECT * FROM users LIMIT 10;  -- 1 requête
+
+-- Pour chaque utilisateur (10 requêtes supplémentaires)
+SELECT * FROM orders WHERE user_id = 1;
+SELECT * FROM orders WHERE user_id = 2;
+SELECT * FROM orders WHERE user_id = 3;
+-- Total : 11 requêtes
+Solutions :
+
+JOIN FETCH
+
+java
+@Query("SELECT u FROM User u LEFT JOIN FETCH u.orders")
+List<User> findAllWithOrders();
+Entity Graph
+
+java
+@EntityGraph(attributePaths = {"orders"})
+List<User> findAll();
+Batch Size
+
+properties
+spring.jpa.properties.hibernate.default_batch_fetch_size=10
+Q15 : Qu'est-ce que @Version (Optimistic Locking) ?
+Réponse :
+@Version permet de gérer les conflits de modification simultanée.
+
+java
+@Entity
+public class User {
+    @Id
+    private Long id;
+
+    @Version
+    private Long version;  // Incrémenté à chaque modification
+}
+Fonctionnement :
+
+text
+1. Utilisateur A lit User (version = 0)
+2. Utilisateur B lit User (version = 0)
+3. A modifie et sauvegarde (version = 1)
+4. B modifie et sauvegarde (version = 1) → Exception OptimisticLockException !
+Pourquoi : Évite la perte de données en cas de modifications simultanées.
+
+Q16 : Quelle est la différence entre @OneToMany et @ManyToMany ?
+Réponse :
+
+@OneToMany	@ManyToMany
+Un parent a plusieurs enfants	Plusieurs parents ont plusieurs enfants
+Table de jointure optionnelle	Table de jointure obligatoire
+Exemple : Un utilisateur a plusieurs commandes	Exemple : Un utilisateur a plusieurs rôles
+java
+// OneToMany
+@OneToMany(mappedBy = "user")
+private List<Order> orders;
+
+// ManyToMany (avec table de jointure)
+@ManyToMany
+@JoinTable(name = "user_roles")
+private Set<Role> roles;
+Q17 : Qu'est-ce que JPQL ?
+Réponse :
+JPQL (Java Persistence Query Language) est un langage de requête orienté objet.
+
+sql
+-- SQL
+SELECT u.id, u.email, u.nom FROM users u WHERE u.email = 'admin@example.com'
+
+-- JPQL
+SELECT u FROM User u WHERE u.email = 'admin@example.com'
+Différences :
+
+JPQL utilise les noms des entités, SQL utilise les noms des tables
+
+JPQL est orienté objet, SQL est orienté table
+
+JPQL est portable (fonctionne avec toutes les bases), SQL est spécifique
+
+Q18 : Qu'est-ce que @Query ?
+Réponse :
+@Query permet d'écrire des requêtes JPQL ou SQL personnalisées.
+
+java
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    // JPQL
+    @Query("SELECT u FROM User u WHERE u.email LIKE %:keyword%")
+    List<User> searchByEmail(@Param("keyword") String keyword);
+
+    // NATIVE SQL
+    @Query(value = "SELECT * FROM users WHERE email LIKE %:keyword%", nativeQuery = true)
+    List<User> searchByEmailNative(@Param("keyword") String keyword);
+
+    // Avec JOIN FETCH (optimisation N+1)
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.orders WHERE u.id = :id")
+    Optional<User> findByIdWithOrders(@Param("id") Long id);
+}
+PARTIE 3 : QUESTIONS SPRING SECURITY
+Q19 : Qu'est-ce que Spring Security ?
+Réponse :
+Spring Security est un framework pour sécuriser les applications Spring.
+
+Fonctionnalités :
+
+✅ Authentification (Login/Register)
+
+✅ Autorisation (Permissions/Rôles)
+
+✅ Protection contre les attaques CSRF, XSS
+
+✅ Support JWT
+
+✅ Intégration facile avec Spring Boot
+
+java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()  // Public
+                .anyRequest().authenticated()                 // Protégé
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+}
+Q20 : Quelle est la différence entre @PreAuthorize et @Secured ?
+Réponse :
+
+@PreAuthorize	@Secured
+✅ Spring Expression Language (SpEL)	❌ Pas de SpEL
+✅ Conditions complexes	❌ Conditions simples
+✅ hasAuthority(), hasRole()	✅ ROLE_ seulement
+✅ Plus flexible	❌ Moins flexible
+✅ Recommandé	⚠️ Déprécié
+Exemple :
+
+java
+// @PreAuthorize (recommandé)
+@PreAuthorize("hasAuthority('USER_READ')")
+public User getUser(Long id) { ... }
+
+@PreAuthorize("hasAuthority('USER_READ') and #id == authentication.principal.id")
+public User getSelf(Long id) { ... }  // Condition complexe
+
+// @Secured (ancien)
+@Secured("ROLE_USER")
+public User getUser(Long id) { ... }
+Q21 : Qu'est-ce que UserDetailsService ?
+Réponse :
+UserDetailsService est une interface Spring Security pour charger un utilisateur.
+
+java
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        // Construire les autorités
+        Set<GrantedAuthority> authorities = user.getRoles().stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+            .collect(Collectors.toSet());
+
+        // Retourner UserDetails
+        return new User(
+            user.getEmail(),
+            user.getPassword(),
+            user.isEnabled(),
+            true, true, true,
+            authorities
+        );
+    }
+}
+Q22 : Qu'est-ce que PasswordEncoder ?
+Réponse :
+PasswordEncoder encode les mots de passe pour les stocker en sécurité.
+
+java
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);  // Force 10 = équilibre sécurité/performance
+    }
+}
+
+// Utilisation
+@Service
+public class UserService {
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public void createUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));  // Encodage
+    }
+
+    public boolean checkPassword(String raw, String encoded) {
+        return passwordEncoder.matches(raw, encoded);  // Vérification
+    }
+}
+Types de PasswordEncoder :
+
+Encoder	Utilisation
+BCryptPasswordEncoder	✅ Recommandé, sécurisé, avec "sel"
+NoOpPasswordEncoder	❌ Aucun encodage (danger)
+Pbkdf2PasswordEncoder	✅ Sécurisé, mais plus lent
+SCryptPasswordEncoder	✅ Sécurisé, résistant aux ASIC
+Q23 : Qu'est-ce que CSRF et comment le désactiver ?
+Réponse :
+CSRF (Cross-Site Request Forgery) est une attaque où un site malveillant envoie une requête à votre API en utilisant la session de l'utilisateur.
+
+Pour les APIs JWT : On désactive CSRF car JWT est stateless et les sessions ne sont pas utilisées.
+
+java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())  // ✅ Désactiver CSRF pour les APIs JWT
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().authenticated()
+            );
+        return http.build();
+    }
+}
+Q24 : Qu'est-ce que l'annotation @EnableMethodSecurity ?
+Réponse :
+@EnableMethodSecurity active les annotations de sécurité sur les méthodes.
+
+java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity  // ← Activer @PreAuthorize, @Secured, @RolesAllowed
+public class SecurityConfig {
+    // ...
+}
+Fonctionnement :
+
+java
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('USER_READ')")  // ✅ Sécurisé
+    public List<User> getAll() { ... }
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('USER_CREATE')")
+    public User create(@RequestBody User user) { ... }
+}
+PARTIE 4 : QUESTIONS JWT
+Q25 : Qu'est-ce que JWT ?
+Réponse :
+JWT (JSON Web Token) est un standard pour l'authentification sans état.
+
+Structure :
+
+text
+xxxxx.yyyyy.zzzzz
+Header.Payload.Signature
+1. Header (Algorithme et type) :
+
+json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+2. Payload (Données) :
+
+json
+{
+  "sub": "user@email.com",
+  "iat": 1234567890,
+  "exp": 1234567890,
+  "roles": ["ROLE_USER"]
+}
+3. Signature (Vérification) :
+
+java
+HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  secret
+)
+Q26 : Quelle est la différence entre JWT et JWS ?
+Réponse :
+
+JWT	JWS
+JSON Web Token (format)	JSON Web Signature (sécurité)
+Contient des claims (données)	Contient une signature
+Peut être non signé	Toujours signé
+header.payload	header.payload.signature
+Exemple :
+
+JWT : xxxxx.yyyyy (non signé, pas sécurisé)
+
+JWS : xxxxx.yyyyy.zzzzz (signé, sécurisé)
+
+Dans la pratique : On utilise toujours JWS (JWT signé).
+
+Q27 : Comment fonctionne JWT dans votre projet ?
+Réponse :
+
+java
+// 1. Génération
+@Component
+public class JwtTokenProvider {
+
+    public String generateToken(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername();
+
+        return Jwts.builder()
+            .setSubject(email)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + 864000000)) // 10 jours
+            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+            .compact();
+    }
+
+    // 2. Validation
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+Q28 : Où est stocké le token JWT ?
+Réponse :
+
+Méthode	Description	Sécurité
+LocalStorage	Stocké dans le navigateur	❌ Vulnérable aux XSS
+SessionStorage	Stocké dans le navigateur	❌ Vulnérable aux XSS
+Cookie HttpOnly	Stocké dans un cookie sécurisé	✅ Protection XSS
+Header Authorization	Envoyé à chaque requête	✅ Standard
+Recommandation : Cookie HttpOnly avec SameSite=Strict pour la sécurité maximale.
+
+javascript
+// Stockage dans LocalStorage (déconseillé)
+localStorage.setItem('token', token);
+
+// Stockage dans Cookie (recommandé)
+document.cookie = `token=${token}; HttpOnly; SameSite=Strict; Secure`;
+Q29 : Comment rafraîchir un token JWT ?
+Réponse :
+La méthode la plus courante est d'utiliser un Refresh Token.
+
+java
+@RestController
+public class AuthController {
+
+    // 1. Login → Access Token + Refresh Token
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
+        String accessToken = tokenProvider.generateToken(authentication);
+        String refreshToken = tokenProvider.generateRefreshToken(authentication);
+        return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken));
+    }
+
+    // 2. Refresh → Nouvel Access Token
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> refresh(@RequestBody RefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+        if (tokenProvider.validateRefreshToken(refreshToken)) {
+            String newAccessToken = tokenProvider.refreshAccessToken(refreshToken);
+            return ResponseEntity.ok(new TokenResponse(newAccessToken, refreshToken));
+        }
+        throw new RuntimeException("Refresh token invalide");
+    }
+}
+Q30 : Comment gérer la révocation d'un token JWT ?
+Réponse :
+JWT est stateless, donc la révocation est difficile.
+
+Solutions :
+
+Blacklist (Redis/Base de données)
+
+java
+@Service
+public class TokenBlacklist {
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    public void blacklistToken(String token) {
+        long expiration = tokenProvider.getExpiration(token);
+        redisTemplate.opsForValue().set("blacklist:" + token, "true", expiration, TimeUnit.MILLISECONDS);
+    }
+
+    public boolean isBlacklisted(String token) {
+        return redisTemplate.hasKey("blacklist:" + token);
+    }
+}
+Short-lived tokens
+
+properties
+app.jwt.expiration-ms=900000  # 15 minutes (court)
+Version de l'utilisateur
+
+java
+@Entity
+public class User {
+    @Version
+    private Long tokenVersion;  // Incrémenté à chaque logout
+}
+PARTIE 5 : QUESTIONS CACHE
+Q31 : Qu'est-ce que le cache et pourquoi l'utiliser ?
+Réponse :
+Le cache est un stockage temporaire de données pour améliorer les performances.
+
+Avantages :
+
+✅ Réduction du temps de réponse (de 100ms à 1ms)
+
+✅ Réduction de la charge sur la base de données
+
+✅ Meilleure scalabilité
+
+Types de cache :
+
+Local (Caffeine, Ehcache) : Rapide, mais pas partagé
+
+Distribué (Redis, Hazelcast) : Partagé, mais plus lent
+
+Hybride (Local + Redis) : Le meilleur des deux mondes
+
+Q32 : Quelle est la différence entre Cache MISS et Cache HIT ?
+Réponse :
+
+text
+Cache MISS : Donnée PAS dans le cache
+    Client → Cache (vide) → Base de Données → Cache (stocke) → Client
+    Temps : 100ms
+
+Cache HIT : Donnée DANS le cache
+    Client → Cache (donnée présente) → Client
+    Temps : 1ms
+Exemple pratique :
+
+java
+// 1er appel : Cache MISS (va en BDD)
+getUser(1) → 🔴 Cache MISS → BDD → Cache (stocke)
+
+// 2ème appel : Cache HIT (vient du cache)
+getUser(1) → ✅ Cache HIT → (pas de BDD)
+Q33 : Qu'est-ce que Caffeine ?
+Réponse :
+Caffeine est une implémentation de cache Java performante.
+
+Fonctionnalités :
+
+✅ Extrêmement rapide (en mémoire)
+
+✅ Gestion automatique de l'expiration
+
+✅ Limitation de taille
+
+✅ Statistiques intégrées
+
+✅ Éviction intelligente (LRU)
+
+java
+@Configuration
+@EnableCaching
+public class CacheConfig {
+
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)  // 10 minutes
+            .maximumSize(1000)                       // 1000 entrées
+            .recordStats()                           // Statistiques
+        );
+        return cacheManager;
+    }
+}
+PARTIE 6 : QUESTIONS ARCHITECTURE
+Q34 : Qu'est-ce que l'architecture microservices ?
+Réponse :
+Les microservices sont une architecture où une application est composée de petits services indépendants.
+
+Caractéristiques :
+
+✅ Chaque service a sa propre base de données
+
+✅ Chaque service est déployé indépendamment
+
+✅ Les services communiquent via HTTP/REST
+
+✅ Chaque service a son propre cycle de vie
+
+Comparaison :
+
+Monolithique	Microservices
+Une seule base	Plusieurs bases
+Déploiement unique	Déploiement indépendant
+Plus simple	Plus complexe
+Technologie unique	Technologies multiples
+Q35 : Qu'est-ce que le modèle MVC ?
+Réponse :
+MVC (Model-View-Controller) est un pattern qui sépare la logique en trois composants.
+
+text
+┌─────────────────────────────────────────────────────────────┐
+│  CONTROLLER (Contrôleur)                                   │
+│  - Reçoit les requêtes                                     │
+│  - Appelle le Model                                        │
+│  - Retourne la View                                       │
+├─────────────────────────────────────────────────────────────┤
+│  MODEL (Modèle)                                            │
+│  - Données de l'application                                │
+│  - Logique métier                                          │
+│  - Accès à la base de données                             │
+├─────────────────────────────────────────────────────────────┤
+│  VIEW (Vue)                                                │
+│  - Interface utilisateur                                   │
+│  - Affichage des données                                   │
+└─────────────────────────────────────────────────────────────┘
+Dans Spring Boot :
+
+Controller = @RestController
+
+Model = @Entity + @Service
+
+View = JSON (pour les API REST)
+
+PARTIE 7 : QUESTIONS CODE
+Q36 : Qu'est-ce qu'un DTO ?
+Réponse :
+DTO (Data Transfer Object) est un objet qui transporte des données entre les couches.
+
+java
+// Entité (base de données)
+@Entity
+public class User {
+    private Long id;
+    private String email;
+    private String password;  // Sensible
+    private LocalDateTime createdAt;
+}
+
+// DTO (API)
+public class UserResponseDTO {
+    private Long id;
+    private String email;
+    private LocalDateTime createdAt;
+    // ✅ Pas de password
+}
+Pourquoi :
+
+✅ Sécurité : Cache les champs sensibles
+
+✅ Performance : Charge moins de champs
+
+✅ Découplage : L'entité peut évoluer sans impacter l'API
+
+Q37 : Quelle est la différence entre un DTO et une entité ?
+Réponse :
+
+Entité	DTO
+Représente une table	Représente une API
+Mapping ORM (JPA)	Mapping JSON
+Contient des annotations JPA	Contient des annotations JSON/Validation
+Peut contenir des relations	Ne contient pas de relations (ou plates)
+Cycle de vie géré par JPA	Cycle de vie géré par l'application
+Peut contenir des méthodes métier	Ne contient que des données
+Q38 : Qu'est-ce qu'un Mapper ?
+Réponse :
+Un mapper convertit les entités en DTOs et vice-versa.
+
+java
+public class UserMapper {
+
+    // DTO → Entité
+    public static User toEntity(UserCreateDTO dto) {
+        User user = new User();
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
+        return user;
+    }
+
+    // Entité → DTO
+    public static UserResponseDTO toResponseDTO(User user) {
+        return UserResponseDTO.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .createdAt(user.getCreatedAt())
+            .build();
+    }
+}
+Pourquoi :
+
+Centralise la logique de conversion
+
+Évite la duplication de code
+
+Facile à maintenir
+
+PARTIE 8 : QUESTIONS GÉNÉRALES
+Q39 : Qu'est-ce que le principe SOLID ?
+Réponse :
+
+Lettre	Nom	Explication
+S	Single Responsibility	Une classe doit avoir une seule responsabilité
+O	Open/Closed	Ouvert à l'extension, fermé à la modification
+L	Liskov Substitution	Une sous-classe doit pouvoir remplacer sa classe parente
+I	Interface Segregation	Interfaces spécifiques plutôt qu'une interface générale
+D	Dependency Inversion	Dépendre des abstractions, pas des implémentations
+Exemple pratique :
+
+java
+// ❌ Mauvaise (violation de SRP)
+public class UserService {
+    public User getUser(Long id) { ... }
+    public void sendEmail(String email) { ... }
+    public void generateReport() { ... }
+}
+
+// ✅ Bonne (SRP)
+public class UserService {
+    public User getUser(Long id) { ... }
+}
+
+public class EmailService {
+    public void sendEmail(String email) { ... }
+}
+
+public class ReportService {
+    public void generateReport() { ... }
+}
+Q40 : Quelle est la différence entre Git et GitHub ?
+Réponse :
+
+Git	GitHub
+Outil de versionnement local	Plateforme hébergée
+Installé sur votre machine	Service web
+Gère les versions du code	Stocke les dépôts en ligne
+Commandes : commit, branch, merge	Fonctionnalités : Pull Requests, Issues, Actions
+Indépendant	Dépendant de Git
+Commandes Git :
+
+bash
+git init                    # Initialiser un dépôt
+git add .                   # Ajouter les fichiers
+git commit -m "Message"     # Committer
+git push                    # Pousser vers GitHub
+git pull                    # Tirer depuis GitHub
+git branch                  # Créer une branche
+git merge                   # Fusionner une branche
+Q41 : Qu'est-ce que le CI/CD ?
+Réponse :
+CI/CD (Continuous Integration/Continuous Deployment) est l'automatisation des tests et du déploiement.
+
+text
+┌─────────────────────────────────────────────────────────────┐
+│  CI (Continuous Integration)                               │
+│  1. Développeur push le code                              │
+│  2. Tests automatisés                                     │
+│  3. Build automatique                                     │
+├─────────────────────────────────────────────────────────────┤
+│  CD (Continuous Deployment)                               │
+│  4. Déploiement automatique                               │
+│  5. Monitoring                                           │
+│  6. Rollback automatique                                  │
+└─────────────────────────────────────────────────────────────┘
+Outils :
+
+GitHub Actions
+
+GitLab CI
+
+Jenkins
+
+CircleCI
+
+PARTIE 9 : QUESTIONS AVANCÉES
+Q42 : Comment gérer les transactions ?
+Réponse :
+
+java
+@Service
+@Transactional  // Au niveau de la classe
+public class UserService {
+
+    @Transactional(readOnly = true)  // Lecture seule
+    public User getUser(Long id) { ... }
+
+    @Transactional  // Modifie les données
+    public User createUser(User user) { ... }
+
+    @Transactional(rollbackFor = Exception.class)  // Rollback sur Exception
+    public void transfer(Account from, Account to, BigDecimal amount) {
+        from.debit(amount);
+        to.credit(amount);
+        if (amount > 1000) {
+            throw new RuntimeException("Montant trop élevé");  // Rollback
+        }
+    }
+}
+Q43 : Comment gérer les exceptions ?
+Réponse :
+
+java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // 404 Not Found
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    // 400 Bad Request (Validation)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(fieldName, message);
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse("Validation échouée", errors));
+    }
+
+    // 500 Internal Server Error
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGlobal(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ErrorResponse("Une erreur interne est survenue"));
+    }
+}
+Q44 : Comment optimiser les requêtes ?
+Réponse :
+
+JOIN FETCH (Éliminer N+1) :
+
+java
+@Query("SELECT u FROM User u LEFT JOIN FETCH u.orders WHERE u.id = :id")
+Optional<User> findByIdWithOrders(@Param("id") Long id);
+Index en base :
+
+sql
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+Pagination :
+
+java
+@GetMapping
+public Page<User> getAll(@PageableDefault(size = 10) Pageable pageable) {
+    return userRepository.findAll(pageable);
+}
+Projection :
+
+java
+public interface UserProjection {
+    Long getId();
+    String getEmail();
+}
+
+@Query("SELECT u.id AS id, u.email AS email FROM User u")
+List<UserProjection> findAllProjection();
+Q45 : Comment sécuriser une API ?
+Réponse :
+
+Authentification JWT
+
+java
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) {
+        String token = request.getHeader("Authorization");
+        if (token != null && tokenProvider.validateToken(token)) {
+            // Authentifier l'utilisateur
+        }
+        filterChain.doFilter(request, response);
+    }
+}
+Autorisation avec @PreAuthorize
+
+java
+@PreAuthorize("hasAuthority('USER_READ')")
+public User getUser(Long id) { ... }
+Validation des données
+
+java
+public class UserRequest {
+    @NotBlank(message = "Email obligatoire")
+    @Email(message = "Email invalide")
+    private String email;
+}
+Protection CSRF
+
+java
+http.csrf(csrf -> csrf.disable());  // Pour JWT
+CORS Configuration
+
+java
+@Bean
+public WebMvcConfigurer corsConfigurer() {
+    return new WebMvcConfigurer() {
+        @Override
+        public void addCorsMappings(CorsRegistry registry) {
+            registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET", "POST", "PUT", "DELETE");
+        }
+    };
+}
+🎯 QUESTIONS LES PLUS FRÉQUENTES EN ENTRETIEN
+#	Question	Fréquence
+1	Qu'est-ce que Spring Boot ?	⭐⭐⭐⭐⭐
+2	Qu'est-ce que JPA/Hibernate ?	⭐⭐⭐⭐⭐
+3	Comment fonctionne JWT ?	⭐⭐⭐⭐⭐
+4	Qu'est-ce que le problème N+1 ?	⭐⭐⭐⭐
+5	Quelle est la différence entre @Component, @Service, @Repository ?	⭐⭐⭐⭐
+6	Comment gérer les exceptions ?	⭐⭐⭐⭐
+7	Qu'est-ce que le cache ?	⭐⭐⭐
+8	Quelle est la différence entre REST et SOAP ?	⭐⭐⭐
+9	Qu'est-ce que l'architecture MVC ?	⭐⭐⭐
+10	Comment sécuriser une API ?	⭐⭐⭐⭐

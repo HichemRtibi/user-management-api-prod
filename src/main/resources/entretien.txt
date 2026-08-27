@@ -1,0 +1,581 @@
+1. Questions Générales
+2. Questions Architecture
+3. Questions Spring Boot
+4. Questions JPA / Hibernate
+5. Questions Sécurité JWT
+6. Questions Cache
+7. Questions Performance
+8. Questions Tests
+9. Questions Base de Données
+10. Questions Code
+
+----------------------------------
+QUESTIONS GÉNÉRALES
+Q1 : Qu'est-ce qu'une API REST ?
+Réponse :
+Une API REST (Representational State Transfer) est une architecture pour les services web qui utilise les méthodes HTTP (GET, POST, PUT, DELETE) pour manipuler des ressources.
+
+Caractéristiques :
+
+✅ Stateless (sans état)
+
+✅ Utilise les verbes HTTP
+
+✅ Utilise le JSON/XML comme format de données
+
+✅ URL identifie les ressources
+GET    /api/utilisateurs    → Récupérer la liste
+POST   /api/utilisateurs    → Créer un utilisateur
+PUT    /api/utilisateurs/1  → Modifier l'utilisateur 1
+DELETE /api/utilisateurs/1  → Supprimer l'utilisateur 1
+
+
+Q2 : Quelle est la différence entre REST et SOAP ?
+REST	SOAP
+Léger	Plus lourd
+Utilise JSON/XML	Utilise uniquement XML
+Stateless	Peut être Stateful
+Plus rapide	Plus lent
+Utilise HTTP	Utilise HTTP/HTTPS/SMTP
+Simple	Complexe
+
+
+Q3 : Qu'est-ce que l'architecture en couches ?
+Réponse :
+Séparation des responsabilités en couches distinctes :
+
+┌─────────────────────────────────────────────────────────────┐
+│  COUCHE PRÉSENTATION (Controller)                          │
+│  - Gère les requêtes HTTP                                 │
+│  - Valide les données                                     │
+│  - Retourne les réponses                                 │
+├─────────────────────────────────────────────────────────────┤
+│  COUCHE MÉTIER (Service)                                  │
+│  - Contient la logique métier                             │
+│  - Gère les transactions                                  │
+│  - Appelle les repositories                               │
+├─────────────────────────────────────────────────────────────┤
+│  COUCHE PERSISTANCE (Repository)                          │
+│  - Accès à la base de données                             │
+│  - Requêtes JPA/SQL                                       │
+├─────────────────────────────────────────────────────────────┤
+│  BASE DE DONNÉES                                          │
+└─────────────────────────────────────────────────────────────┘
+Avantages :
+
+✅ Maintenabilité
+
+✅ Testabilité
+
+✅ Réutilisabilité
+
+✅ Évolutivité
+
+
+UESTIONS ARCHITECTURE
+Q4 : Pourquoi séparer les couches ?
+Réponse :
+
+Couche	Responsabilité	Pourquoi séparer
+Controller	Gestion HTTP	Changement d'API n'affecte pas la logique
+Service	Logique métier	Réutilisable par plusieurs controllers
+Repository	Accès aux données	Changement de base ne touche pas la logique
+Exemple concret :
+Si on veut passer de REST à GraphQL, on change seulement le Controller, le Service et le Repository restent les mêmes.
+
+Q5 : Quelle est la différence entre @Controller et @RestController ?
+
+Différence :
+
+@Controller : Retourne des vues (pages HTML)
+
+@RestController : Retourne du JSON/XML
+
+@RestController = @Controller + @ResponseBody
+
+QUESTIONS SPRING BOOT
+Q6 : Qu'est-ce que Spring Boot ?
+Réponse :
+Spring Boot est un framework qui simplifie le développement d'applications Spring :
+
+✅ Configuration automatique : Spring configure automatiquement les beans
+
+✅ Serveur intégré : Tomcat intégré, pas besoin de déployer un fichier WAR
+
+✅ Starters : Dépendances pré-configurées (spring-boot-starter-web, spring-boot-starter-data-jpa)
+
+✅ Production-ready : Actuator, metrics, health checks
+
+Q7 : Qu'est-ce que l'injection de dépendances ?
+Réponse :
+Spring gère automatiquement les dépendances entre les objets.
+ypes d'injection :
+
+✅ Constructor Injection (Recommandé) : final, immuable, testable
+
+✅ Setter Injection : pour les dépendances optionnelles
+
+❌ Field Injection : difficile à tester, cache les dépendances
+
+Q8 : Qu'est-ce que Lombok ?
+Réponse :
+Lombok réduit le code boilerplate (répétitif) avec des annotations.
+
+Avant (sans Lombok) :
+
+Annotation	Rôle
+@Data	Getter, Setter, equals, hashCode, toString
+@Builder	Pattern Builder
+@RequiredArgsConstructor	Constructeur avec champs final
+@AllArgsConstructor	Constructeur avec tous les champs
+@NoArgsConstructor	Constructeur vide
+@Slf4j	Ajoute un logger
+
+
+9 : Qu'est-ce que JPA ?
+Réponse :
+JPA (Java Persistence API) est une spécification pour le mapping objet-relationnel (ORM).
+
+Hibernate est l'implémentation la plus utilisée de JPA
+
+Permet de mapper des objets Java vers des tables SQL
+
+Évite d'écrire du SQL manuellement
+
+
+Q10 : Quelle est la différence entre JPA et Hibernate ?
+JPA	Hibernate
+Spécification (contrat)	Implémentation (code concret)
+Interface	Classe concrète
+Standard Java	Framework spécifique
+javax.persistence.*	org.hibernate.*
+Conclusion : JPA définit comment faire, Hibernate le fait.
+
+
+Q11 : Qu'est-ce que le problème N+1 ?
+Réponse :
+Le problème N+1 survient lorsque l'on charge une entité et que l'on exécute des requêtes supplémentaires pour charger ses relations.
+
+-- 1 requête pour l'utilisateur
+SELECT * FROM users WHERE id = 1;
+
+-- + N requêtes pour les rôles (N = nombre d'utilisateurs)
+SELECT * FROM roles WHERE user_id = 1;  -- 1ère
+SELECT * FROM roles WHERE user_id = 2;  -- 2ème
+SELECT * FROM roles WHERE user_id = 3;  -- 3ème
+-- Total : 1 + N requêtes
+
+
+solution
+-- 1 seule requête
+SELECT u.*, r.* FROM users u
+LEFT JOIN user_roles ur ON u.id = ur.user_id
+LEFT JOIN roles r ON r.id = ur.role_id
+WHERE u.id = 1;
+
+
+Q12 : Quelle est la différence entre EAGER et LAZY ?
+EAGER	LAZY
+Charge immédiatement	Charge à la demande
+Plus de requêtes au départ	Moins de requêtes au départ
+Peut causer N+1	Évite le N+1 mais peut causer LazyInitializationException
+FetchType.EAGER	FetchType.LAZY
+Recommandation : Toujours utiliser LAZY, sauf cas spécifiques.
+
+
+Q13 : Qu'est-ce que @Transactional ?
+Réponse :
+@Transactional garantit l'atomicité des opérations en base de données.
+Propriétés importantes :
+
+rollbackFor : Exception qui déclenche le rollback
+
+readOnly : Pour les lectures (optimisation)
+
+propagation : Comportement de la transaction
+
+5. QUESTIONS SÉCURITÉ JWT
+Q14 : Qu'est-ce que JWT ?
+Réponse :
+JWT (JSON Web Token) est un standard pour l'authentification sans état (stateless).
+
+Structure d'un token JWT :
+┌─────────────────────────────────────────────────────────────────────┐
+│  HEADER : Algorithme de signature                                  │
+│  {                                                                 │
+│    "alg": "HS256",                                                │
+│    "typ": "JWT"                                                   │
+│  }                                                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│  PAYLOAD : Données (claims)                                       │
+│  {                                                                 │
+│    "sub": "user@email.com",     // Sujet (email)                  │
+│    "iat": 1234567890,           // Issued At                      │
+│    "exp": 1234567890            // Expiration                     │
+│  }                                                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│  SIGNATURE : Vérification                                         │
+│  HMACSHA256(                                                       │
+│    base64UrlEncode(header) + "." +                                │
+│    base64UrlEncode(payload),                                      │
+│    secret                                                         │
+│  )                                                                 │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+Q15 : Comment fonctionne l'authentification JWT ?
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. L'utilisateur s'enregistre ou se connecte                     │
+│     POST /api/auth/register ou /api/auth/login                    │
+├─────────────────────────────────────────────────────────────────────┤
+│  2. Le serveur vérifie les identifiants                           │
+│     → UtilisateurRepository.findByEmail()                         │
+│     → PasswordEncoder.matches()                                   │
+├─────────────────────────────────────────────────────────────────────┤
+│  3. Le serveur génère un token JWT                                │
+│     → JwtTokenProvider.generateToken()                            │
+├─────────────────────────────────────────────────────────────────────┤
+│  4. Le serveur renvoie le token au client                         │
+│     → { "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }     │
+├─────────────────────────────────────────────────────────────────────┤
+│  5. Le client envoie le token à chaque requête                    │
+│     → Headers: Authorization: Bearer <token>                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  6. Le serveur vérifie le token                                   │
+│     → JwtAuthenticationFilter.doFilterInternal()                  │
+│     → JwtTokenProvider.validateToken()                            │
+├─────────────────────────────────────────────────────────────────────┤
+│  7. Le serveur autorise ou refuse l'accès                         │
+│     → 200 OK ou 401 Unauthorized                                 │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+Q16 : Qu'est-ce qu'un filtre Spring Security ?
+Réponse :
+Un filtre intercepte les requêtes HTTP avant qu'elles n'atteignent les controllers.
+
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) {
+        // 1. Extraire le token du header
+        String token = request.getHeader("Authorization");
+
+        // 2. Valider le token
+        if (token != null && tokenProvider.validateToken(token)) {
+            // 3. Charger l'utilisateur
+            String email = tokenProvider.getUsernameFromToken(token);
+            UserDetails user = userDetailsService.loadUserByUsername(email);
+
+            // 4. Mettre l'authentification dans le contexte
+            SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+        }
+
+        // 5. Continuer la chaîne
+        filterChain.doFilter(request, response);
+    }
+}
+
+Q17 : Pourquoi JWT plutôt que les sessions ?
+JWT	Sessions
+❌ Pas de session côté serveur	✅ Session côté serveur
+✅ Scalable (microservices)	❌ Non scalable
+✅ Stateless	❌ Stateful
+✅ Le client stocke le token	❌ Le serveur stocke la session
+✅ Peut être partagé entre services	❌ Session unique
+Recommandation : JWT pour les applications modernes, sessions pour les applications monolithiques.
+
+
+
+6. QUESTIONS CACHE
+Q18 : Qu'est-ce que le cache ?
+Réponse :
+Le cache est un stockage temporaire de données pour améliorer les performances.
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  SANS CACHE                                                        │
+│  Client → Service → Base de Données → Service → Client           │
+│  (Toujours en BDD)                                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  AVEC CACHE                                                        │
+│  Client → Service → Cache (si présent) → Client                  │
+│  │                                                                 │
+│  └─→ Cache (si absent) → Base de Données → Cache → Client       │
+└─────────────────────────────────────────────────────────────────────┘
+
+Avantages :
+
+✅ Réduction du temps de réponse
+
+✅ Réduction de la charge sur la base de données
+
+✅ Meilleure scalabilité
+
+Q19 : Quelle est la différence entre @Cacheable et @CacheEvict ?
+
+// @Cacheable : Met en cache le résultat
+@Cacheable(value = "utilisateurs", key = "#id")
+public Utilisateur getUtilisateur(Long id) {
+    // 1er appel → va en BDD et stocke dans cache
+    // 2ème appel → prend du cache
+    return utilisateurRepository.findById(id).orElseThrow();
+}
+
+// @CacheEvict : Vide le cache
+@CacheEvict(value = "utilisateurs", allEntries = true)
+public void updateUtilisateur(Utilisateur utilisateur) {
+    // Modifie l'utilisateur et vide le cache
+    // Pour éviter des données obsolètes
+    utilisateurRepository.save(utilisateur);
+}
+
+Q20 : Pourquoi Caffeine ?
+Réponse :
+Caffeine est une implémentation de cache performante pour Java.
+
+Fonctionnalités :
+
+✅ Extrêmement rapide (en mémoire)
+
+✅ Gestion automatique de l'expiration
+
+✅ Limitation de taille
+
+✅ Statistiques intégrées
+
+✅ Éviction intelligente (Least Recently Used)
+
+Caffeine.newBuilder()
+    .expireAfterWrite(10, TimeUnit.MINUTES)  // Expire après 10 min
+    .maximumSize(1000)                       // 1000 entrées max
+    .recordStats()                           // Statistiques
+    .build();
+
+7. QUESTIONS PERFORMANCE
+Q21 : Comment optimiser les performances d'une API ?
+Réponse :
+
+Technique	Description	Impact
+Cache	Stockage temporaire	⭐⭐⭐ Élevé
+JOIN FETCH	Élimine N+1	⭐⭐⭐ Élevé
+Pagination	Limite les données	⭐⭐⭐ Élevé
+Index	Accélère les requêtes	⭐⭐⭐ Élevé
+Projection	Charge moins de champs	⭐⭐ Moyen
+Lazy Loading	Charge à la demande	⭐⭐ Moyen
+
+
+Q22 : Comment détecter les problèmes de performance ?
+Réponse :
+
+Activer les logs SQL :
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.orm.jdbc.bind=TRACE
+
+Activer les statistiques Hibernate :
+spring.jpa.properties.hibernate.generate_statistics=true
+
+Session Metrics {
+    3 JDBC statements executed   ← 3 requêtes pour 1 utilisateur
+    → Problème N+1 !
+}
+
+@Query("SELECT u FROM Utilisateur u LEFT JOIN FETCH u.roles WHERE u.id = :id")
+Optional<Utilisateur> findByIdWithRoles(@Param("id") Long id);
+
+
+
+
+8. QUESTIONS TESTS
+Q23 : Pourquoi tester ?
+Réponse :
+
+Raison	Explication
+Qualité	Vérifie que le code fonctionne
+Régression	Évite les bugs après modifications
+Documentation	Les tests documentent le code
+Confiance	Permet de refactorer en sécurité
+CI/CD	Intégration continue automatique
+Q24 : Quelle est la différence entre test unitaire et test d'intégration ?
+Réponse :
+
+java
+// Test unitaire : Teste UNE classe isolément
+@ExtendWith(MockitoExtension.class)
+class UtilisateurServiceTest {
+    @Mock
+    private UtilisateurRepository repository;
+
+    @InjectMocks
+    private UtilisateurService service;
+
+    @Test
+    void shouldGetUser() {
+        when(repository.findById(1L)).thenReturn(Optional.of(user));
+        Utilisateur result = service.getUtilisateur(1L);
+        assertThat(result).isNotNull();
+    }
+}
+
+// Test d'intégration : Teste tout le contexte
+@SpringBootTest
+@AutoConfigureMockMvc
+class UtilisateurControllerTest {
+    @Test
+    void shouldGetUser() throws Exception {
+        mockMvc.perform(get("/api/utilisateurs/1"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.id").value(1));
+    }
+}
+Caractéristique	Test unitaire	Test d'intégration
+Portée	Une classe	Plusieurs classes
+Vitesse	Très rapide	Plus lent
+Mocks	Oui	Non
+Base de données	Mockée	Réelle (H2/TestContainers)
+Contexte Spring	Non	Oui
+9. QUESTIONS BASE DE DONNÉES
+Q25 : Pourquoi les index en base de données ?
+Réponse :
+Les index accélèrent les requêtes de recherche.
+
+Sans index : Scan complet de la table (lent)
+Avec index : Recherche rapide (arbre B+)
+
+sql
+-- Ajouter un index sur email (recherche fréquente)
+CREATE INDEX idx_users_email ON users(email);
+
+-- Impact : SELECT * FROM users WHERE email = 'user@email.com'
+-- Sans index : 10000 lignes scannées
+-- Avec index : 1 ligne trouvée directement
+Inconvénients :
+
+Plus d'espace disque
+
+Plus lent pour les INSERT/UPDATE/DELETE
+
+Q26 : Quelle est la différence entre SQL et JPQL ?
+Réponse :
+
+sql
+-- SQL : Utilise les noms des tables et colonnes
+SELECT u.id, u.email, u.nom FROM users u WHERE u.email = 'admin@example.com'
+
+-- JPQL : Utilise les noms des entités et attributs
+SELECT u FROM Utilisateur u WHERE u.email = 'admin@example.com'
+SQL	JPQL
+Tables et colonnes	Entités et attributs
+Database agnostic	Database agnostic
+users	Utilisateur
+u.email	u.email
+10. QUESTIONS CODE
+Q27 : Qu'est-ce qu'un DTO ?
+Réponse :
+Un DTO (Data Transfer Object) est un objet qui transporte des données entre les couches.
+
+java
+// Entité (base de données)
+@Entity
+public class Utilisateur {
+    private Long id;
+    private String email;
+    private String motDePasse;  // ⚠️ Sensible
+}
+
+// DTO (API)
+public class UtilisateurResponseDTO {
+    private Long id;
+    private String email;
+    // ✅ Pas de motDePasse
+}
+Pourquoi :
+
+Sécurité : Ne pas exposer les champs sensibles
+
+Performance : Ne transporter que les champs nécessaires
+
+Découplage : L'entité peut évoluer sans impacter l'API
+
+Q28 : Quelle est la différence entre les DTOs Request et Response ?
+Réponse :
+
+java
+// Request DTO : Ce que le client envoie
+public class UtilisateurRequestDTO {
+    private String prenom;
+    private String nom;
+    private String email;
+    private String motDePasse;  // ✅ Le client envoie le mot de passe
+    // ❌ Pas d'id, pas de createdAt
+}
+
+// Response DTO : Ce que le serveur renvoie
+public class UtilisateurResponseDTO {
+    private Long id;           // ✅ Généré par la base
+    private String prenom;
+    private String nom;
+    private String email;
+    // ❌ Pas de motDePasse (sécurité)
+    private LocalDateTime createdAt;  // ✅ Rempli automatiquement
+}
+Raison :
+
+Request : Ce dont l'API a besoin pour créer/modifier
+
+Response : Ce que l'API veut exposer
+
+Q29 : Qu'est-ce qu'un Mapper ?
+Réponse :
+Un mapper convertit les entités en DTOs et vice-versa.
+
+java
+public class UtilisateurMapper {
+
+    // DTO → Entité (pour création)
+    public static Utilisateur toEntity(UtilisateurRequestDTO dto) {
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setPrenom(dto.getPrenom());
+        utilisateur.setNom(dto.getNom());
+        utilisateur.setEmail(dto.getEmail());
+        return utilisateur;
+    }
+
+    // Entité → DTO (pour réponse)
+    public static UtilisateurResponseDTO toResponseDTO(Utilisateur utilisateur) {
+        return UtilisateurResponseDTO.builder()
+                .id(utilisateur.getId())
+                .prenom(utilisateur.getPrenom())
+                .nom(utilisateur.getNom())
+                .email(utilisateur.getEmail())
+                .createdAt(utilisateur.getCreatedAt())
+                .build();
+    }
+}
+Pourquoi :
+
+Centralise la logique de conversion
+
+Évite la duplication de code
+
+Facile à maintenir
+
+📋 GLOSSAIRE
+Terme	Définition
+API	Interface de programmation d'application
+REST	Architecture pour les services web
+JPA	Java Persistence API
+ORM	Object-Relational Mapping
+DTO	Data Transfer Object
+JWT	JSON Web Token
+CRUD	Create, Read, Update, Delete
+N+1	Problème de performance JPA
+Cache	Stockage temporaire de données
+Index	Structure pour accélérer les requêtes
+Transaction	Groupe d'opérations atomiques
+Stateless	Sans état

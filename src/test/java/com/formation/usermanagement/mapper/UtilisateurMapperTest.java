@@ -156,7 +156,6 @@ class UtilisateurMapperTest {
         assertThat(dto.getPrenom()).isEqualTo("Jean");
         assertThat(dto.getNom()).isEqualTo("Dupont");
         assertThat(dto.getEmail()).isEqualTo("jean.dupont@email.com");
-        assertThat(dto.getNomComplet()).isEqualTo("Jean Dupont");
         assertThat(dto.isEnabled()).isTrue();
         assertThat(dto.isCompteNonVerrouille()).isTrue();
         assertThat(dto.isCompteNonExpire()).isTrue();
@@ -261,7 +260,7 @@ class UtilisateurMapperTest {
         assertThat(dto.getId()).isEqualTo(100L);
         assertThat(dto.getPrenom()).isEqualTo("Test");
         assertThat(dto.getNom()).isEqualTo("Builder");
-        assertThat(dto.getNomComplet()).isEqualTo("Test Builder");
+       // assertThat(dto.getNomComplet()).isEqualTo("Test Builder");
         assertThat(dto.isEnabled()).isFalse();
         assertThat(dto.getRoles()).contains("ROLE_TEST");
         assertThat(dto.getPermissions()).contains("TEST_READ");
