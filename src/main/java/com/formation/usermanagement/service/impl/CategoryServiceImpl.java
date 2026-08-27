@@ -197,12 +197,8 @@ public class CategoryServiceImpl implements CategoryService {
                     return new CategoryNotFoundException("ID: " + id);
                 });
 
-        // Vérifier que la catégorie n'a pas de produits
-        long productCount = categoryRepository.countProductsByCategory().stream()
-                .filter(result -> ((Long) result[0]).equals(id))
-                .map(result -> (Long) result[2])
-                .findFirst()
-                .orElse(0L);
+        // ✅ Vérifier que la catégorie n'a pas de produits en utilisant la liste
+        long productCount = (category.getProducts() != null) ? category.getProducts().size() : 0;
 
         if (productCount > 0) {
             log.warn("❌ La catégorie {} contient {} produit(s)", category.getName(), productCount);
@@ -213,7 +209,6 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.deleteById(id);
         log.info("✅ Catégorie supprimée avec succès");
     }
-
     // ============================================================
     // 6. RECHERCHE
     // ============================================================
