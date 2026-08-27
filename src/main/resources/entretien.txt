@@ -579,3 +579,424 @@ Cache	Stockage temporaire de données
 Index	Structure pour accélérer les requêtes
 Transaction	Groupe d'opérations atomiques
 Stateless	Sans état
+
+
+
+1. Introduction aux codes HTTP
+2. 401 Unauthorized - Explication détaillée
+3. 403 Forbidden - Explication détaillée
+4. Différence entre 401 et 403
+5. Questions Entretien + Réponses
+6. Mise en pratique dans Spring Security
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  CODES 2xx : SUCCÈS                                                │
+│  200 OK                  → Tout va bien                           │
+│  201 Created             → Ressource créée                       │
+│  204 No Content          → Succès sans contenu                    │
+├─────────────────────────────────────────────────────────────────────┤
+│  CODES 3xx : REDIRECTION                                           │
+│  301 Moved Permanently   → Ressource déplacée                     │
+│  302 Found               → Ressource temporairement déplacée      │
+├─────────────────────────────────────────────────────────────────────┤
+│  CODES 4xx : ERREUR CLIENT                                         │
+│  400 Bad Request         → Requête invalide                       │
+│  401 Unauthorized        → Non authentifié (pas connecté)         │
+│  403 Forbidden           → Accès interdit (connecté mais pas autorisé)│
+│  404 Not Found           → Ressource introuvable                  │
+│  409 Conflict            → Conflit (ressource déjà existante)     │
+├─────────────────────────────────────────────────────────────────────┤
+│  CODES 5xx : ERREUR SERVEUR                                        │
+│  500 Internal Server Error → Erreur interne du serveur            │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+2. 401 UNAUTHORIZED - EXPLICATION DÉTAILLÉE
+📖 QU'EST-CE QUE LE CODE 401 ?
+Définition :
+Le code 401 Unauthorized indique que la requête n'a pas été authentifiée. L'utilisateur n'a PAS FOURNI d'identifiants valides.
+
+Traduction : "Je ne sais pas qui vous êtes"
+
+🔍 QUAND OBTIENT-ON UN 401 ?
+Scénario	Explication
+Pas de token	L'utilisateur n'a pas envoyé de token JWT
+Token invalide	Le token JWT est mal formé ou corrompu
+Token expiré	Le token JWT a dépassé sa date d'expiration
+Token mal formaté	Le header Authorization est incorrect
+Non authentifié	L'utilisateur ne s'est jamais connecté
+📝 EXEMPLE DE REQUÊTE 401
+Requête (Sans authentification)
+http
+GET /api/utilisateurs/1
+Réponse (401 Unauthorized)
+http
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+WWW-Authenticate: Bearer
+
+{
+    "success": false,
+    "message": "Non authentifié",
+    "timestamp": "2026-08-27T10:00:00",
+    "path": "/api/utilisateurs/1"
+}
+Le header WWW-Authenticate est obligatoire ! Il indique au client comment s'authentifier.
+
+📊 DANS SPRING SECURITY
+Quand Spring retourne 401 ?
+java
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) {
+        try {
+            String jwt = getJwtFromRequest(request);
+
+            if (jwt == null) {
+                // 🔴 Pas de token → 401
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
+            if (!tokenProvider.validateToken(jwt)) {
+                // 🔴 Token invalide → 401
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
+            // Token valide, continuer
+            filterChain.doFilter(request, response);
+
+        } catch (Exception e) {
+            // 🔴 Erreur → 401
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        }
+    }
+}
+3. 403 FORBIDDEN - EXPLICATION DÉTAILLÉE
+📖 QU'EST-CE QUE LE CODE 403 ?
+Définition :
+Le code 403 Forbidden indique que l'utilisateur est authentifié mais N'A PAS la permission d'accéder à la ressource.
+
+Traduction : "Je sais qui vous êtes, mais vous n'avez pas le droit"
+
+🔍 QUAND OBTIENT-ON UN 403 ?
+Scénario	Explication
+Permission manquante	L'utilisateur n'a pas la permission nécessaire
+Rôle insuffisant	L'utilisateur a un rôle trop faible
+Accès à une ressource d'un autre utilisateur	L'utilisateur tente d'accéder aux données d'un autre
+Ressource protégée	L'API exige une permission spécifique
+📝 EXEMPLE DE REQUÊTE 403
+Requête (Avec token mais sans permission)
+http
+GET /api/utilisateurs/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Réponse (403 Forbidden)
+http
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{
+    "success": false,
+    "message": "Accès refusé - Permission USER_READ requise",
+    "timestamp": "2026-08-27T10:00:00",
+    "path": "/api/utilisateurs/1"
+}
+📊 DANS SPRING SECURITY
+Quand Spring retourne 403 ?
+java
+@RestController
+@RequestMapping("/api/utilisateurs")
+public class UtilisateurController {
+
+    // 🔴 Si l'utilisateur n'a pas USER_READ → 403
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<UtilisateurResponseDTO> getUtilisateur(@PathVariable Long id) {
+        // ...
+    }
+}
+Spring retourne 403 dans ces cas :
+
+Cas	Explication
+@PreAuthorize("hasAuthority('USER_READ')")	User n'a pas USER_READ
+@PreAuthorize("hasRole('ADMIN')")	User n'a pas ROLE_ADMIN
+@PreAuthorize("hasAuthority('PERMISSION_READ')")	Permission manquante
+@PreAuthorize("#id == authentication.principal.id")	Autre utilisateur
+4. DIFFÉRENCE ENTRE 401 ET 403
+📊 TABLEAU COMPARATIF
+Critère	401 Unauthorized	403 Forbidden
+État	Non authentifié	Authentifié
+Token	❌ Absent ou invalide	✅ Présent et valide
+Permission	Inconnue (pas d'utilisateur)	Insuffisante
+Traduction	"Je ne sais pas qui vous êtes"	"Je sais qui vous êtes, mais vous n'avez pas le droit"
+Header WWW-Authenticate	✅ Obligatoire	❌ Non requis
+Cause principale	Pas de token ou token invalide	Permission manquante
+Résolution	Fournir un token valide	Obtenir les permissions nécessaires
+📊 SCHÉMA DE DÉCISION
+text
+┌─────────────────────────────────────────────────────────────────────┐
+│  RECEPTION D'UNE REQUÊTE PROTÉGÉE                                 │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  TOKEN PRÉSENT ?                                            │   │
+│  │  ├─ OUI → Vérifier le token                               │   │
+│  │  └─ NON → 401 Unauthorized (authentifiez-vous)            │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                          │                                         │
+│                          ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  TOKEN VALIDE ?                                             │   │
+│  │  ├─ OUI → Vérifier les permissions                        │   │
+│  │  └─ NON → 401 Unauthorized (token invalide ou expiré)     │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                          │                                         │
+│                          ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  PERMISSION REQUISE ?                                       │   │
+│  │  ├─ OUI → 200 OK (accès autorisé)                         │   │
+│  │  └─ NON → 403 Forbidden (pas la permission)              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+5. QUESTIONS ENTRETIEN AVEC RÉPONSES
+Q1 : Quelle est la différence entre 401 Unauthorized et 403 Forbidden ?
+Réponse :
+
+401 Unauthorized	403 Forbidden
+L'utilisateur n'est PAS CONNECTÉ	L'utilisateur est CONNECTÉ
+Token absent ou invalide	Token valide
+"Je ne sais pas qui vous êtes"	"Je sais qui vous êtes, mais vous n'avez pas le droit"
+Exemple : pas de token JWT	Exemple : USER n'a pas USER_READ
+Header WWW-Authenticate obligatoire	Pas de header WWW-Authenticate
+Réponse simple :
+
+401 → Pas de token, token invalide ou expiré
+
+403 → Token valide mais permission insuffisante
+
+Q2 : Comment Spring Security gère les erreurs 401 et 403 ?
+Réponse :
+
+401 Unauthorized : Géré par AuthenticationEntryPoint
+
+java
+@Component
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    @Override
+    public void commence(HttpServletRequest request,
+                         HttpServletResponse response,
+                         AuthenticationException authException) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", false);
+        body.put("message", "Non authentifié - Token JWT requis");
+        body.put("timestamp", LocalDateTime.now());
+
+        response.getWriter().write(new ObjectMapper().writeValueAsString(body));
+    }
+}
+403 Forbidden : Géré par AccessDeniedHandler
+
+java
+@Component
+public class JwtAccessDeniedHandler implements AccessDeniedHandler {
+
+    @Override
+    public void handle(HttpServletRequest request,
+                       HttpServletResponse response,
+                       AccessDeniedException accessDeniedException) {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", false);
+        body.put("message", "Accès refusé - Permission insuffisante");
+        body.put("timestamp", LocalDateTime.now());
+
+        response.getWriter().write(new ObjectMapper().writeValueAsString(body));
+    }
+}
+Q3 : Que doit contenir le header WWW-Authenticate ?
+Réponse :
+
+Le header WWW-Authenticate est OBLIGATOIRE pour une réponse 401.
+
+http
+WWW-Authenticate: Bearer realm="api"
+WWW-Authenticate: Bearer error="invalid_token"
+WWW-Authenticate: Bearer error="invalid_token", error_description="Token expiré"
+Explications :
+
+Élément	Rôle
+Bearer	Type d'authentification
+realm="api"	Domaine de protection
+error="invalid_token"	Type d'erreur
+error_description="..."	Description de l'erreur
+Q4 : Comment tester les erreurs 401 et 403 ?
+Réponse :
+
+Test 1 : 401 Unauthorized (pas de token)
+
+http
+GET http://localhost:8080/api/utilisateurs/1
+Résultat : 401 Unauthorized
+
+Test 2 : 401 Unauthorized (token invalide)
+
+http
+GET http://localhost:8080/api/utilisateurs/1
+Authorization: Bearer token_invalide
+Résultat : 401 Unauthorized
+
+Test 3 : 403 Forbidden (token valide, permission insuffisante)
+
+http
+GET http://localhost:8080/api/utilisateurs/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Avec un token d'un utilisateur sans la permission USER_READ
+
+Résultat : 403 Forbidden
+
+Q5 : Pourquoi 401 est-il parfois mal utilisé ?
+Réponse :
+
+Une erreur courante est d'utiliser 401 alors que le problème est une permission manquante.
+
+❌ MAUVAIS :
+
+java
+if (!user.hasPermission("USER_READ")) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();  // 401
+}
+✅ BON :
+
+java
+if (!user.hasPermission("USER_READ")) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();  // 403
+}
+Code	Usage correct
+401	Token absent, invalide ou expiré
+403	Token valide mais permission insuffisante
+6. MISE EN PRATIQUE DANS SPRING SECURITY
+📝 CONFIGURATION COMPLÈTE
+java
+package com.formation.usermanagement.config.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
+    private final JwtAccessDeniedHandler accessDeniedHandler;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          JwtAuthenticationEntryPoint unauthorizedHandler,
+                          JwtAccessDeniedHandler accessDeniedHandler) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+
+            // ✅ Gestion des erreurs 401 et 403
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(unauthorizedHandler)  // 401
+                .accessDeniedHandler(accessDeniedHandler)       // 403
+            )
+
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            .authorizeHttpRequests(auth -> auth
+                // 🔓 Endpoints publics (pas de token)
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+
+                // 🔒 Endpoints protégés (token requis)
+                .anyRequest().authenticated()
+            )
+
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
+📝 GESTION DES ERREURS DANS LE CONTROLLER
+java
+@RestController
+@RequestMapping("/api/utilisateurs")
+public class UtilisateurController {
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_READ')")  // ✅ Si permission manquante → 403
+    public ResponseEntity<UtilisateurResponseDTO> getUtilisateur(@PathVariable Long id) {
+        // ...
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_DELETE')")  // ✅ Si permission manquante → 403
+    public ResponseEntity<Void> deleteUtilisateur(@PathVariable Long id) {
+        // ...
+    }
+}
+🧪 EXEMPLES DE RÉPONSES
+Cas 1 : Requête sans token → 401
+json
+{
+    "success": false,
+    "message": "Non authentifié - Token JWT requis",
+    "timestamp": "2026-08-27T10:00:00",
+    "path": "/api/utilisateurs/1"
+}
+Cas 2 : Token invalide → 401
+json
+{
+    "success": false,
+    "message": "Token JWT invalide ou expiré",
+    "timestamp": "2026-08-27T10:00:00",
+    "path": "/api/utilisateurs/1"
+}
+Cas 3 : Permission manquante → 403
+json
+{
+    "success": false,
+    "message": "Accès refusé - Permission USER_READ requise",
+    "timestamp": "2026-08-27T10:00:00",
+    "path": "/api/utilisateurs/1"
+}
+📋 RÉSUMÉ RAPIDE POUR L'ENTRETIEN
+Code	Nom	Cause	Résolution
+401	Unauthorized	Pas de token, token invalide ou expiré	Fournir un token valide
+403	Forbidden	Token valide mais permission insuffisante	Obtenir les permissions nécessaires
+À retenir :
+
+❌ 401 = "Je ne sais pas qui vous êtes"
+
+❌ 403 = "Je sais qui vous êtes, mais vous n'avez pas le droit"
+
+🎯 BONNE CHANCE POUR L'ENTRETIEN !
