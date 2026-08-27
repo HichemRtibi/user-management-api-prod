@@ -1,0 +1,172 @@
+Notre application de gestion d'utilisateurs, rôles et permissions va s'enrichir avec un module de gestion de produits et catégories.
+
+Objectif
+Permettre de gérer un catalogue de produits organisés par catégories.
+
+📊 LE MODÈLE MÉTIER
+text
+┌─────────────────────────────────────────────────────────────────────┐
+│  LE MODÈLE MÉTIER                                                  │
+│                                                                     │
+│  ┌──────────────────┐     ┌──────────────────────────────────────┐ │
+│  │    CATEGORY      │     │              PRODUCT                │ │
+│  ├──────────────────┤     ├──────────────────────────────────────┤ │
+│  │ id               │────▶│ id                                 │ │
+│  │ name             │     │ name                               │ │
+│  │ description      │     │ description                        │ │
+│  │ created_at       │     │ price                              │ │
+│  │ updated_at       │     │ quantity                           │ │
+│  │ created_by       │     │ imageUrl                           │ │
+│  │ updated_by       │     │ category_id  (FK vers Category)    │ │
+│  └──────────────────┘     │ created_at                         │ │
+│                           │ updated_at                         │ │
+│                           │ created_by                         │ │
+│                           │ updated_by                         │ │
+│                           └──────────────────────────────────────┘ │
+│                                                                     │
+│  RELATION :                                                         │
+│  - Une Catégorie peut avoir plusieurs Produits (OneToMany)        │
+│  - Un Produit appartient à une seule Catégorie (ManyToOne)        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+📖 EXPLICATION DES ENTITÉS
+1. CATEGORY (Catégorie)
+Rôle : Regrouper les produits par type (ex: Électronique, Vêtements, Livres).
+
+Champ	Type	Rôle
+name	String	Nom de la catégorie (ex: "Électronique") - UNIQUE
+description	String	Description de la catégorie (optionnelle)
+products	List<Product>	Liste des produits de cette catégorie (OneToMany)
+Exemples de données :
+
+text
+ID: 1, name: "Électronique", description: "Appareils électroniques"
+ID: 2, name: "Vêtements", description: "Vêtements et accessoires"
+ID: 3, name: "Livres", description: "Livres et publications"
+2. PRODUCT (Produit)
+Rôle : Représenter un article vendu dans le catalogue.
+
+Champ	Type	Rôle
+name	String	Nom du produit (ex: "iPhone 15")
+description	String	Description détaillée
+price	BigDecimal	Prix unitaire (décimal avec 2 chiffres après la virgule)
+quantity	Integer	Quantité en stock
+imageUrl	String	URL de l'image (optionnelle)
+category	Category	La catégorie du produit (ManyToOne)
+Exemples de données :
+
+text
+ID: 1, name: "iPhone 15", price: 999.99, quantity: 10, category_id: 1 (Électronique)
+ID: 2, name: "T-shirt Blanc", price: 19.99, quantity: 50, category_id: 2 (Vêtements)
+ID: 3, name: "Spring Boot Guide", price: 39.99, quantity: 100, category_id: 3 (Livres)
+🔗 RELATIONS EXPLIQUÉES
+1. Category → Product (OneToMany)
+java
+@OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+private List<Product> products = new ArrayList<>();
+Explication :
+
+Une catégorie a plusieurs produits
+
+mappedBy = "category" : Le côté propriétaire est Product
+
+fetch = FetchType.LAZY : Les produits ne sont chargés qu'à la demande
+
+cascade = CascadeType.ALL : Si on supprime une catégorie, tous ses produits sont supprimés
+
+2. Product → Category (ManyToOne)
+java
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "category_id")
+private Category category;
+Explication :
+
+Un produit appartient à une seule catégorie
+
+fetch = FetchType.LAZY : La catégorie est chargée à la demande
+
+@JoinColumn : Clé étrangère category_id dans la table products
+
+📋 MÉTHODES UTILITAIRES
+Category : Gestion des produits
+java
+public void addProduct(Product product) {
+    this.products.add(product);
+    product.setCategory(this);
+}
+
+public void removeProduct(Product product) {
+    this.products.remove(product);
+    product.setCategory(null);
+}
+Pourquoi ces méthodes ?
+
+Maintiennent la cohérence des deux côtés de la relation
+
+Évite d'appeler product.setCategory(this) à chaque fois
+
+Centralise la logique d'ajout/retrait
+
+🗂️ TABLES EN BASE DE DONNÉES
+Table "categories"
+sql
+CREATE TABLE categories (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(200),
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+    version BIGINT DEFAULT 0
+);
+Table "products"
+sql
+CREATE TABLE products (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500),
+    price DECIMAL(10,2) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    image_url VARCHAR(255),
+    category_id BIGINT,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
+    version BIGINT DEFAULT 0,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+🔐 PERMISSIONS ASSOCIÉES
+Catégorie	Permission	Description
+PRODUCT	PRODUCT_READ	Consulter les produits
+PRODUCT_CREATE	Créer un produit
+PRODUCT_UPDATE	Modifier un produit
+PRODUCT_DELETE	Supprimer un produit
+CATEGORY	CATEGORY_READ	Consulter les catégories
+CATEGORY_CREATE	Créer une catégorie
+CATEGORY_UPDATE	Modifier une catégorie
+CATEGORY_DELETE	Supprimer une catégorie
+📝 RÉSUMÉ DES OPÉRATIONS
+Ce qu'on va pouvoir faire :
+Opération	Endpoint	Permission
+Catégories
+Lister les catégories	GET /api/categories	CATEGORY_READ
+Créer une catégorie	POST /api/categories	CATEGORY_CREATE
+Modifier une catégorie	PUT /api/categories/{id}	CATEGORY_UPDATE
+Supprimer une catégorie	DELETE /api/categories/{id}	CATEGORY_DELETE
+Produits
+Lister les produits	GET /api/products	PRODUCT_READ
+Récupérer un produit	GET /api/products/{id}	PRODUCT_READ
+Créer un produit	POST /api/products	PRODUCT_CREATE
+Modifier un produit	PUT /api/products/{id}	PRODUCT_UPDATE
+Supprimer un produit	DELETE /api/products/{id}	PRODUCT_DELETE
+Produits par catégorie	GET /api/products/category/{categoryId}	PRODUCT_READ
+❓ QUESTIONS À SE POSER
+Question	Réponse
+Un produit peut-il avoir plusieurs catégories ?	❌ Non, un produit a une seule catégorie
+Une catégorie peut-elle être vide ?	✅ Oui, sans produit
+Que se passe-t-il si on supprime une catégorie ?	Tous ses produits sont supprimés (CascadeType.ALL)
+Le prix est-il stocké en entier ?	❌ Non, en décimal (BigDecimal)
+Maintenant que vous comprenez le métier, on passe à l'ÉTAPE 1 ? 👍
+
