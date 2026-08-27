@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     // ============================================================
-    // 1. EXCEPTIONS EXISTANTES (Utilisateur, Role, Permission)
+    // EXCEPTIONS EXISTANTES
     // ============================================================
 
     @ExceptionHandler(UtilisateurNotFoundException.class)
@@ -36,6 +38,34 @@ public class GlobalExceptionHandler {
         log.warn("Email déjà existant : {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
+
+    // ============================================================
+    // ✅ AJOUTER CES HANDLERS POUR L'AUTHENTIFICATION
+    // ============================================================
+
+    /**
+     * Gère l'exception UsernameNotFoundException (email non trouvé)
+     * → 401 Unauthorized
+     */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameNotFound(UsernameNotFoundException ex) {
+        log.warn("Utilisateur non trouvé : {}", ex.getMessage());
+        return buildErrorResponse("Identifiants incorrects", HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * Gère l'exception BadCredentialsException (mauvais mot de passe)
+     * → 401 Unauthorized
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+        log.warn("Identifiants incorrects : {}", ex.getMessage());
+        return buildErrorResponse("Identifiants incorrects", HttpStatus.UNAUTHORIZED);
+    }
+
+    // ============================================================
+    // AUTRES EXCEPTIONS
+    // ============================================================
 
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRoleNotFound(RoleNotFoundException ex) {
@@ -98,30 +128,21 @@ public class GlobalExceptionHandler {
     }
 
     // ============================================================
-    // 2. ✅ NOUVELLES EXCEPTIONS : CATEGORY
+    // NOUVELLES EXCEPTIONS CATEGORY
     // ============================================================
 
-    /**
-     * Catégorie non trouvée → 404 Not Found
-     */
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException ex) {
         log.warn("Catégorie non trouvée : {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Catégorie déjà existante → 409 Conflict
-     */
     @ExceptionHandler(CategoryDejaExistantException.class)
     public ResponseEntity<ErrorResponse> handleCategoryDejaExistant(CategoryDejaExistantException ex) {
         log.warn("Catégorie déjà existante : {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
-    /**
-     * Catégorie utilisée par des produits → 409 Conflict
-     */
     @ExceptionHandler(CategoryUtiliseException.class)
     public ResponseEntity<ErrorResponse> handleCategoryUtilise(CategoryUtiliseException ex) {
         log.warn("Catégorie utilisée : {}", ex.getMessage());
@@ -129,21 +150,15 @@ public class GlobalExceptionHandler {
     }
 
     // ============================================================
-    // 3. ✅ NOUVELLES EXCEPTIONS : PRODUCT
+    // NOUVELLES EXCEPTIONS PRODUCT
     // ============================================================
 
-    /**
-     * Produit non trouvé → 404 Not Found
-     */
     @ExceptionHandler(ProductNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleProductNotFound(ProductNotFoundException ex) {
         log.warn("Produit non trouvé : {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Stock insuffisant → 400 Bad Request
-     */
     @ExceptionHandler(StockInsuffisantException.class)
     public ResponseEntity<ErrorResponse> handleStockInsuffisant(StockInsuffisantException ex) {
         log.warn("Stock insuffisant : {}", ex.getMessage());
@@ -151,7 +166,7 @@ public class GlobalExceptionHandler {
     }
 
     // ============================================================
-    // 4. EXCEPTIONS DE VALIDATION
+    // EXCEPTIONS DE VALIDATION
     // ============================================================
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -184,7 +199,7 @@ public class GlobalExceptionHandler {
     }
 
     // ============================================================
-    // 5. EXCEPTIONS GÉNÉRIQUES
+    // EXCEPTIONS GÉNÉRIQUES
     // ============================================================
 
     @ExceptionHandler(RuntimeException.class)
@@ -200,7 +215,7 @@ public class GlobalExceptionHandler {
     }
 
     // ============================================================
-    // 6. MÉTHODE UTILITAIRE
+    // MÉTHODE UTILITAIRE
     // ============================================================
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
@@ -214,7 +229,7 @@ public class GlobalExceptionHandler {
     }
 
     // ============================================================
-    // 7. CLASSE INTERNE
+    // CLASSE INTERNE
     // ============================================================
 
     @Data
