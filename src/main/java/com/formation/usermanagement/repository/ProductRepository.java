@@ -160,6 +160,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p ORDER BY p.quantity DESC")
     List<Product> findTop10MostStocked();
 
+    List<Product> findTop10ByOrderByQuantityDesc();  // ← Spring Data le fait automatiquement
+
+
     // ============================================================
     // 6. MÉTHODES DE MODIFICATION (Modifying)
     // ============================================================
