@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +90,14 @@ stamper.close();
                 .setFontSize(22).setTextAlignment(TextAlignment.CENTER).setMarginBottom(20);
         //ajouter le titre
         document.add(title);
+        //========================================================
+        //3 Date
+        //==============================================
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        //gerre le date
+        Paragraph dateParag = new Paragraph("Date :" + date);
+        dateParag.setFontSize(11).setTextAlignment(TextAlignment.RIGHT).setMarginBottom(20);
+        document.add(dateParag);
 
         // 2. Fermer le document (pour l'instant, PDF vide)
         document.close();
