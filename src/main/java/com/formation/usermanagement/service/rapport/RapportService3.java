@@ -1,4 +1,4 @@
-package com.formation.usermanagement.service;
+package com.formation.usermanagement.service.rapport;
 
 import com.formation.usermanagement.entity.Product;
 import com.formation.usermanagement.entity.Utilisateur;
@@ -135,6 +135,109 @@ public class RapportService3 {
 
         document.close();
         pdfDoc.close();
+
+        return outputStream.toByteArray();
+    }
+    // ============================================================
+// 4. CATALOGUE PRODUITS
+// ============================================================
+
+    /**
+     * Génère un catalogue PDF de tous les produits
+     * (nom, catégorie, prix, stock, description)
+     *
+     * Format : Paysage (A4 Landscape) pour afficher plus de colonnes
+     */
+    public byte[] generateProductReport() throws Exception {
+        log.info("📦 Génération du catalogue des produits");
+
+        // 1. Récupérer tous les produits
+        List<Product> allProducts = productRepository.findAllWithCategory();
+
+        // 2. Créer le PDF
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+
+        // Format paysage pour plus de colonnes
+        Document document = new Document(pdfDoc, PageSize.A4.rotate());
+        document.setMargins(50, 50, 50, 50);
+
+        PdfFont boldFont = PdfFontFactory.createFont("Helvetica-Bold");
+        PdfFont regularFont = PdfFontFactory.createFont("Helvetica");
+
+        // 3. Titre
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+
+        document.add(new Paragraph("CATALOGUE DES PRODUITS")
+                .setFont(boldFont).setFontSize(22)
+                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(5));
+
+        document.add(new Paragraph("Date : " + date)
+                .setFont(regularFont).setFontSize(11)
+                .setTextAlignment(TextAlignment.RIGHT).setMarginBottom(20));
+
+        // 4. Tableau des produits (6 colonnes)
+        Table productTable = new Table(UnitValue.createPercentArray(new float[]{5, 20, 15, 15, 10, 35}))
+                .setWidth(UnitValue.createPercentValue(100));
+
+        // En-têtes
+        String[] headers = {"N°", "Nom", "Catégorie", "Prix", "Stock", "Description"};
+        for (String h : headers) {
+            Cell cell = new Cell().add(new Paragraph(h).setFont(boldFont));
+            cell.setBackgroundColor(ColorConstants.LIGHT_GRAY);
+            cell.setTextAlignment(TextAlignment.CENTER);
+            cell.setPadding(5);
+            productTable.addCell(cell);
+        }
+
+        // Lignes
+        int index = 1;
+        for (Product product : allProducts) {
+            String categoryName = product.getCategory() != null
+                    ? product.getCategory().getName() : "N/A";
+            String description = product.getDescription() != null
+                    ? product.getDescription() : "";
+
+            // N°
+            Cell cell1 = new Cell().add(new Paragraph(String.valueOf(index++)).setFont(regularFont));
+            cell1.setTextAlignment(TextAlignment.CENTER);
+            productTable.addCell(cell1);
+
+            // Nom
+            productTable.addCell(new Cell().add(new Paragraph(product.getName()).setFont(regularFont)));
+
+            // Catégorie
+            productTable.addCell(new Cell().add(new Paragraph(categoryName).setFont(regularFont)));
+
+            // Prix
+            Cell priceCell = new Cell().add(new Paragraph(String.format("%.2f €", product.getPrice())).setFont(regularFont));
+            priceCell.setTextAlignment(TextAlignment.RIGHT);
+            productTable.addCell(priceCell);
+
+            // Stock
+            Cell stockCell = new Cell().add(new Paragraph(String.valueOf(product.getQuantity())).setFont(regularFont));
+            stockCell.setTextAlignment(TextAlignment.RIGHT);
+            productTable.addCell(stockCell);
+
+            // Description
+            productTable.addCell(new Cell().add(new Paragraph(description).setFont(regularFont)));
+        }
+
+        document.add(productTable);
+
+        // 5. Pied de page
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph("═══════════════════════════════════════════════════════════════")
+                .setFont(regularFont).setFontSize(10).setTextAlignment(TextAlignment.CENTER));
+        document.add(new Paragraph("Fin du catalogue - " + date)
+                .setFont(regularFont).setFontSize(10).setTextAlignment(TextAlignment.CENTER).setMarginTop(10));
+
+        // 6. Fermer
+        document.close();
+        pdfDoc.close();
+
+        log.info("✅ Catalogue généré - {} produits", allProducts.size());
 
         return outputStream.toByteArray();
     }

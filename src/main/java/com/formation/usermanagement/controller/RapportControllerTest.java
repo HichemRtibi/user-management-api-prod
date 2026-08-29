@@ -1,7 +1,6 @@
 package com.formation.usermanagement.controller;
 
-import com.formation.usermanagement.service.RapportService3;
-import com.formation.usermanagement.service.ReportService;
+import com.formation.usermanagement.service.rapport.RapportService3;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -173,7 +171,7 @@ public class RapportControllerTest {
     public ResponseEntity<byte[]> downloadProductReport() {
         try {
             log.info("📦 Demande de téléchargement du catalogue des produits");
-            byte[] pdfBytes = reportService.generateStatisticsReport();
+            byte[] pdfBytes = reportService.generateProductReport();
             return buildResponse(pdfBytes, "catalogue-produits");
         } catch (Exception e) {
             log.error("❌ Erreur : {}", e.getMessage(), e);
@@ -229,7 +227,7 @@ public class RapportControllerTest {
                     filename = "rapport-utilisateurs";
                     break;
                 case "products":
-                    pdfBytes = reportService.generateStatisticsReport();
+                    pdfBytes = reportService.generateProductReport();
                     filename = "catalogue-produits";
                     break;
                 default:
