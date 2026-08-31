@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,30 +62,38 @@ public class AuthController {
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         log.info("🔐 Tentative de connexion : {}", loginRequest.getEmail());
+        try {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getMotDePasse()
-                )
-        );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getMotDePasse()
+                    )
+            );
 
-        String token = tokenProvider.generateToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Utilisateur utilisateur = utilisateurRepository.findByEmailWithAllRelations(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+            String token = tokenProvider.generateToken(authentication);
 
-        // ✅ RECHARGER l'utilisateur depuis la base pour avoir createdAt
+            Utilisateur utilisateur = utilisateurRepository.findByEmailWithAllRelations(loginRequest.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+            // ✅ RECHARGER l'utilisateur depuis la base pour avoir createdAt
 //        Utilisateur utilisateurReload = utilisateurRepository.findById(utilisateur.getId())
 //                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        UtilisateurResponseDTO utilisateurDTO = UtilisateurMapper.toResponseDTO(utilisateur);
+            UtilisateurResponseDTO utilisateurDTO = UtilisateurMapper.toResponseDTO(utilisateur);
 
-        log.info("✅ Connexion réussie pour : {}", loginRequest.getEmail());
+            log.info("✅ Connexion réussie pour : {}", loginRequest.getEmail());
 
-        return ResponseEntity.ok(new LoginResponseDTO(token, utilisateurDTO));
+            return ResponseEntity.ok(new LoginResponseDTO(token, utilisateurDTO));
+        } catch (AuthenticationException e) {
+            monitoringService.incrementUserLoginFailed();
+
+            log.warn("❌ Échec de connexion : {}", loginRequest.getEmail());
+            throw new RuntimeException("Email ou mot de passe incorrect");
+        }
     }
 
     @PostMapping("/register")
