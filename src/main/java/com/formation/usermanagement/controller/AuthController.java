@@ -9,6 +9,7 @@ import com.formation.usermanagement.exception.EmailDejaExistantException;
 import com.formation.usermanagement.mapper.UtilisateurMapper;
 import com.formation.usermanagement.repository.UtilisateurRepository;
 import com.formation.usermanagement.config.security.JwtTokenProvider;
+import com.formation.usermanagement.service.MonitoringService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,6 +42,8 @@ public class AuthController {
     private final JwtTokenProvider tokenProvider;
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MonitoringService monitoringService;  // ← AJOUTER CETTE LIGNE
+
 
     @PostMapping("/login")
     @Operation(
@@ -108,6 +111,8 @@ public class AuthController {
         // Sauvegarder
         Utilisateur saved = utilisateurRepository.save(utilisateur);
         log.info("✅ Utilisateur créé : {}", registerRequest.getEmail());
+
+        monitoringService.incrementUserRegistration();
 
         // Récupérer l'utilisateur pour avoir createdAt
         Utilisateur utilisateurReload = utilisateurRepository.findById(saved.getId())

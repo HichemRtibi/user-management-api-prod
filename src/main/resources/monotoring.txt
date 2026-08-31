@@ -210,6 +210,34 @@ Combien de produits ont été créés ?
 
 C'est EXACTEMENT ce qu'on va faire !
 
+verification metric regsiration sur l application
+
+// Exemple 1
+{
+    "email": "user1@test.com",
+    "motDePasse": "Password2026!",
+    "confirmationMotDePasse": "Password2026!",
+    "prenom": "Jean",
+    "nom": "Dupont"
+}
+
+// Exemple 2
+{
+    "email": "user2@test.com",
+    "motDePasse": "Secure#1234",
+    "confirmationMotDePasse": "Secure#1234",
+    "prenom": "Marie",
+    "nom": "Martin"
+}
+
+// Exemple 3
+{
+    "email": "user3@test.com",
+    "motDePasse": "Admin@2026",
+    "confirmationMotDePasse": "Admin@2026",
+    "prenom": "Pierre",
+    "nom": "Durand"
+}
 
 
 
