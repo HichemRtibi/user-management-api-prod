@@ -214,6 +214,34 @@
             <version>7.2.5</version>
             <type>pom</type>
         </dependency>
+
+
+        <!-- ============================================================ -->
+        <!-- SPRING BATCH                                                   -->
+        <!-- ============================================================ -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-batch</artifactId>
+        </dependency>
+
+        <!-- Base de données pour les métadonnées de batch -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <!-- ========================================================== -->
+        <!-- SPRING ACTUATOR - MONITORING                                -->
+        <!-- ========================================================== -->
+
+
+
+        <!-- Pour les métriques personnalisées avec AOP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

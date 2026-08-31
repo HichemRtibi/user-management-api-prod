@@ -1,0 +1,108 @@
+Pourquoi Spring Batch ?┌
+─────────────────────────────────────────────────────────────────────┐
+│  PROBLÈME SANS SPRING BATCH                                        │
+│                                                                     │
+│  ❌ Pas de reprise en cas d'erreur                                │
+│  ❌ Pas de suivi des exécutions                                   │
+│  ❌ Pas de gestion des transactions                               │
+│  ❌ Pas de parallélisation                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  SOLUTION AVEC SPRING BATCH                                        │
+│                                                                     │
+│  ✅ Reprise automatique en cas d'erreur                           │
+│  ✅ Suivi de chaque exécution (JobRepository)                     │
+│  ✅ Transactions gérées                                           │
+│  ✅ Parallélisation des traitements                               │
+└─────────────────────────────────────────────────────────────────────┘
+
+Les 3 concepts principaux
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. JOB (Le travail à faire)                                      │
+│     ┌─────────────────────────────────────────────────────────┐   │
+│     │  "Exporter les rapports PDF"                            │   │
+│     │  "Importer les utilisateurs depuis un fichier CSV"     │   │
+│     │  "Envoyer des emails aux utilisateurs inactifs"        │   │
+│     └─────────────────────────────────────────────────────────┘   │
+│                              │                                      │
+│                              ▼                                      │
+│  2. STEP (Une étape du travail)                                  │
+│     ┌─────────────────────────────────────────────────────────┐   │
+│     │  Step 1 : Lire les données (Reader)                    │   │
+│     │  Step 2 : Traiter les données (Processor)              │   │
+│     │  Step 3 : Écrire les résultats (Writer)               │   │
+│     └─────────────────────────────────────────────────────────┘   │
+│                              │                                      │
+│                              ▼                                      │
+│  3. CHUNK (Un lot de données)                                    │
+│     ┌─────────────────────────────────────────────────────────┐   │
+│     │  Traiter les données par paquets de 10                 │   │
+│     │  Exemple : 1000 lignes → 100 chunks de 10             │   │
+│     │  Une transaction par chunk                             │   │
+│     └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+🔍 COMPOSANTS D'UN STEP
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  UN STEP = READER + PROCESSOR + WRITER                             │
+│                                                                     │
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────┐           │
+│  │  READER     │ →  │  PROCESSOR   │ →  │  WRITER     │           │
+│  │  (Lire)     │    │  (Traiter)   │    │  (Écrire)   │           │
+│  └─────────────┘    └──────────────┘    └─────────────┘           │
+│                                                                     │
+│  Exemple :                                                          │
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────┐           │
+│  │  Lire les   │    │  Générer le  │    │  Sauvegarder│           │
+│  │  types de   │ →  │  PDF pour    │ →  │  le PDF     │           │
+│  │  rapports   │    │  chaque type │    │  sur disque │           │
+│  └─────────────┘    └──────────────┘    └─────────────┘           │
+│                                                                     │
+│  Entrée : "statistics"           Sortie : byte[] (le PDF)          │
+└─────────────────────────────────────────────────────────────────────┘
+📊 LE CONCEPT DE CHUNK
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  QU'EST-CE QU'UN CHUNK ?                                           │
+│                                                                     │
+│  C'est un groupe d'éléments traités ensemble.                      │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  Exemple : 1000 utilisateurs à traiter                     │   │
+│  │                                                             │   │
+│  │  Chunk size = 100                                          │   │
+│  │                                                             │   │
+│  │  Chunk 1 : utilisateurs 1-100   → Transaction 1           │   │
+│  │  Chunk 2 : utilisateurs 101-200 → Transaction 2           │   │
+│  │  Chunk 3 : utilisateurs 201-300 → Transaction 3           │   │
+│  │  ...                                                       │   │
+│  │  Chunk 10 : utilisateurs 901-1000 → Transaction 10        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ✅ Si une erreur survient au chunk 5, les chunks 1-4 sont validés │
+│  ✅ Reprise automatique à partir du chunk 5                       │
+└─────────────────────────────────────────────────────────────────────┘
+Ce qu'on va faire
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  NOTRE BATCH : EXPORTER DES RAPPORTS PDF                          │
+│                                                                     │
+│  1. JOB : "Exporter les rapports"                                  │
+│     │                                                              │
+│     ▼                                                              │
+│  2. STEP : "Générer les PDF"                                      │
+│     │                                                              │
+│     ├── READER : Lire les types de rapports                       │
+│     │   └── ["statistics", "sales", "users", "products"]          │
+│     │                                                              │
+│     ├── PROCESSOR : Générer le PDF pour chaque type              │
+│     │   └── "statistics" → ReportService.generateStatisticsReport│
+│     │                                                              │
+│     └── WRITER : Sauvegarder le PDF                               │
+│         └── Sauvegarder dans le dossier "reports/"                │
+│                                                                     │
+│  3. CHUNK SIZE = 1 (un rapport à la fois)                         │
+└─────────────────────────────────────────────────────────────────────┘

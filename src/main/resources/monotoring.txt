@@ -1,0 +1,99 @@
+ COURS : SPRING ACTUATOR & MONITORING
+🎯 OBJECTIF GLOBAL DE LA LEÇON
+À la fin de cette leçon, votre application pourra :
+
+✅ Surveiller sa santé (savoir si elle fonctionne)
+
+✅ Voir ses métriques (performances, mémoire, requêtes)
+
+✅ Changer les logs en temps réel (sans redémarrer)
+
+✅ Exporter les données vers Prometheus (pour faire des graphiques)
+
+
+/actuator/health → Pour voir si l'appli est vivante
+
+/actuator/metrics → Pour voir les performances
+
+/actuator/info → Pour voir les infos de l'appli
+
+
+<!-- 2. MICROMETER PROMETHEUS -->
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+</dependency>
+Rôle : Transforme les métriques en format que Prometheus peut lire. Prometheus est un outil qui stocke les données pour faire des graphiques.
+
+
+<!-- 3. SPRING AOP -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+Rôle : Permet de mesurer automatiquement le temps d'exécution des méthodes avec des annotations comme @TrackMetrics.
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PLAN D'INTÉGRATION - PAR ÉTAPES                         │
+│                                                                             │
+│  ✅ ÉTAPE 1-5 : Spring Actuator                                            │
+│     (On s'assure que les métriques sont là)                               │
+│                                                                             │
+│  ✅ ÉTAPE 6 : Prometheus                                                   │
+│     (On stocke les métriques)                                             │
+│                                                                             │
+│  ✅ ÉTAPE 7 : Grafana                                                      │
+│     (On visualise avec des graphiques)                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+Pourquoi cet ordre ?
+Actuator d'abord → Pour avoir des métriques à montrer
+
+Prometheus ensuite → Pour stocker ces métriques
+
+Grafana enfin → Pour faire de beaux graphiques
+
+
+📚 LEÇON : SPRING ACTUATOR & MONITORING
+
+├── 📝 ÉTAPE 1 : Dépendances Actuator
+├── 📝 ÉTAPE 2 : Configuration application.properties
+├── 📝 ÉTAPE 3 : Sécurité Actuator
+├── 📝 ÉTAPE 4 : Tester les endpoints
+├── 📝 ÉTAPE 5 : Métriques personnalisées
+├── 📝 ÉTAPE 6 : Configuration Prometheus (installation)
+├── 📝 ÉTAPE 7 : Visualisation avec Grafana
+└── 📝 ÉTAPE 8 : Dashboard complet
+
+
+
+# ============================================================
+# SPRING ACTUATOR - MONITORING
+# ============================================================
+
+# Exposer tous les endpoints Actuator
+management.endpoints.web.exposure.include=*
+
+# Afficher les détails de santé
+management.endpoint.health.show-details=always
+management.endpoint.health.show-components=always
+
+# Activer toutes les métriques
+management.metrics.enable.all=true
+
+# Activer les informations de build
+management.info.build.enabled=true
+management.info.env.enabled=true
+management.info.java.enabled=true
+
+# Activer les probes pour Kubernetes (optionnel mais utile)
+management.health.probes.enabled=true
+
+# Permettre de changer les logs en runtime
+management.endpoint.loggers.enabled=true
+
+# Exposer Prometheus
+management.endpoint.prometheus.enabled=true
+
