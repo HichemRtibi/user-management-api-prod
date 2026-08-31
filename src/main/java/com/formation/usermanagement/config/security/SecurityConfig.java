@@ -45,7 +45,14 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",       // Documentation OpenAPI
                                 "/swagger-ui.html",      // Swagger UI
                                 "/h2-console/**"         // H2 Console (pour le développement)
-                        ).permitAll()
+                        ).permitAll().
+                        requestMatchers("/actuator/prometheus").permitAll()  // ← AJOUTER
+
+                                // ========================================================
+                                // 🟢 2. ACTUATOR - ACCÈS PUBLIC (santé et info)
+                                // ========================================================
+                                .requestMatchers("/actuator/health/**").permitAll()
+                                .requestMatchers("/actuator/info").permitAll()
 
                         // 🔐 Tous les autres endpoints nécessitent une authentification
                         .anyRequest().authenticated()

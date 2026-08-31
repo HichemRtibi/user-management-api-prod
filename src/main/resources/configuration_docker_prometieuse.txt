@@ -1,0 +1,88 @@
+
+# Sur Windows
+cd C:\Users\VotreNom\Desktop
+mkdir prometheus
+cd prometheus
+notepad prometheus.yml
+
+# Sur Mac
+cd ~/Desktop
+mkdir prometheus
+cd prometheus
+nano prometheus.yml
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'user-management'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+lancer
+
+docker run -d --name prometheus -p 9090:9090 -v "C:\FormationSpringData\user-management\prometheus\prometheus.yml:/etc/prometheus/prometheus.yml" prom/prometheus
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    CRÉATION DU DOSSIER PROMETHEUS                          │
+│                                                                             │
+│  1. Choisir un emplacement :                                               │
+│     □ Dans le projet (recommandé)                                          │
+│     □ Dans le dossier utilisateur                                          │
+│     □ Sur le bureau                                                        │
+│                                                                             │
+│  2. Créer le dossier : mkdir prometheus                                   │
+│                                                                             │
+│  3. Aller dans le dossier : cd prometheus                                 │
+│                                                                             │
+│  4. Créer le fichier : prometheus.yml                                     │
+│                                                                             │
+│  5. Copier le contenu YAML                                                 │
+│                                                                             │
+│  6. Sauvegarder le fichier                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    ANALOGIE DE LA BOÎTE AUX LETTRES                        │
+│                                                                             │
+│  📮 Au démarrage de l'application :                                        │
+│     → La boîte aux lettres est VIDE                                       │
+│     → Aucune métrique AOP n'existe                                        │
+│                                                                             │
+│  📮 Vous appelez GET /api/products pour la 1ère fois :                    │
+│     → L'AOP intercepte l'appel                                            │
+│     → CRÉE la métrique method.ProductController.getAllProducts.duration  │
+│     → La métrique est maintenant DANS la boîte                            │
+│                                                                             │
+│  📮 Vous appelez GET /api/products pour la 2ème fois :                    │
+│     → L'AOP incrémente la métrique EXISTANTE                              │
+│     → La métrique est mise à jour                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+===================================================================
+
+configuration graphana
+docker run -d --name grafana -p 3000:3000 grafana/grafana
+
+✅ GRAFANA + PROMETHEUS : CONNEXION RÉUSSIE !
+text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    INFRASTRUCTURE COMPLÈTE                                 │
+│                                                                             │
+│  ✅ Application Spring Boot                                                │
+│     └── http://localhost:8080                                             │
+│                                                                             │
+│  ✅ Prometheus                                                             │
+│     └── http://localhost:9090                                             │
+│                                                                             │
+│  ✅ Grafana                                                                │
+│     └── http://localhost:3000                                             │
+│                                                                             │
+│  ✅ Connexion Grafana → Prometheus                                         │
+│     └── Data source is working ✅                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
