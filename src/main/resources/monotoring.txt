@@ -97,3 +97,119 @@ management.endpoint.loggers.enabled=true
 # Exposer Prometheus
 management.endpoint.prometheus.enabled=true
 
+
+🧪 TESTEZ MAINTENANT !
+Ouvrez votre navigateur et testez :
+
+bash
+# Voir tous les endpoints disponibles
+http://localhost:8080/actuator
+
+# La santé de l'application
+http://localhost:8080/actuator/health
+
+# Les métriques (le nombre de requêtes par exemple)
+http://localhost:8080/actuator/metrics
+
+# Les informations de l'application
+http://localhost:8080/actuator/info
+
+# Les logs (pour changer le niveau)
+http://localhost:8080/actuator/loggers
+
+# Les beans Spring
+http://localhost:8080/actuator/beans
+🎯 RÉPONSE À VOTRE QUESTION
+❓ Pourquoi 14 endpoints exactement ?
+Réponse : Parce que Spring a détecté quels endpoints sont disponibles en fonction de :
+
+Les dépendances dans le classpath
+
+Les configurations activées
+
+Les endpoints exposés dans application.properties
+
+Votre configuration :
+
+properties
+management.endpoints.web.exposure.include=*  # ← "expose tout"
+Donc Spring a exposé TOUS les endpoints qu'il connaît, soit 14 dans votre cas.
+
+📊 LE NOMBRE PEUT VARIER
+Situation	Nombre d'endpoints
+Avec include=* et toutes les dépendances	14-16
+Avec seulement health et info	2
+En production (limité)	3-5
+✅ VÉRIFICATION
+Maintenant, confirmez-moi que vous voyez bien ceci dans votre navigateur :
+
+text
+GET http://localhost:8080/actuator
+
+# Voir tous les endpoints disponibles
+http://localhost:8080/actuator
+
+# La santé de l'application
+http://localhost:8080/actuator/health
+
+# Les métriques (le nombre de requêtes par exemple)
+http://localhost:8080/actuator/metrics
+
+# Les informations de l'application
+http://localhost:8080/actuator/info
+
+# Les logs (pour changer le niveau)
+http://localhost:8080/actuator/loggers
+
+# Les beans Spring
+http://localhost:8080/actuator/beans
+
+Résultat attendu :
+{
+  "_links": {
+    "self": { "href": "http://localhost:8080/actuator", "templated": false },
+    "health": { "href": "http://localhost:8080/actuator/health", "templated": false },
+    "health-path": { "href": "http://localhost:8080/actuator/health/{*path}", "templated": true },
+    "info": { "href": "http://localhost:8080/actuator/info", "templated": false },
+    "metrics": { "href": "http://localhost:8080/actuator/metrics", "templated": false },
+    "metrics-requiredMetricName": { "href": "http://localhost:8080/actuator/metrics/{requiredMetricName}", "templated": true },
+    "prometheus": { "href": "http://localhost:8080/actuator/prometheus", "templated": false },
+    "loggers": { "href": "http://localhost:8080/actuator/loggers", "templated": false },
+    "loggers-name": { "href": "http://localhost:8080/actuator/loggers/{name}", "templated": true },
+    "env": { "href": "http://localhost:8080/actuator/env", "templated": false },
+    "env-toMatch": { "href": "http://localhost:8080/actuator/env/{toMatch}", "templated": true },
+    "configprops": { "href": "http://localhost:8080/actuator/configprops", "templated": false },
+    "beans": { "href": "http://localhost:8080/actuator/beans", "templated": false },
+    "threaddump": { "href": "http://localhost:8080/actuator/threaddump", "templated": false },
+    "caches": { "href": "http://localhost:8080/actuator/caches", "templated": false },
+    "mappings": { "href": "http://localhost:8080/actuator/mappings", "templated": false }
+  }
+}
+📝 VOTRE CONFIRMATION
+text
+✅ ÉTAPE 2 TERMINÉE
+
+- J'ai testé /actuator : [OUI/NON]
+- Je vois 14 endpoints : [OUI/NON]
+- /actuator/health fonctionne : [OUI/NON]
+- /actuator/metrics fonctionne : [OUI/NON]
+👉 Dites-moi "OK" quand vous avez testé, et je vous donne l'ÉTAPE 3 (la sécurité). 🚀
+
+
+
+
+Les métriques par défaut sont génériques (CPU, mémoire, etc.). Mais vous voulez savoir :
+
+Combien d'utilisateurs se sont inscrits aujourd'hui ?
+
+Combien de connexions ont échoué ?
+
+Quel est le temps moyen d'une requête de connexion ?
+
+Combien de produits ont été créés ?
+
+C'est EXACTEMENT ce qu'on va faire !
+
+
+
+
