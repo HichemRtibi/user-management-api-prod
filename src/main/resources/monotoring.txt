@@ -239,5 +239,10 @@ verification metric regsiration sur l application
     "nom": "Durand"
 }
 
+===================================================================================================
+ajouter les autre metric et test
+http://localhost:8080/actuator/metrics/user.logins.failed
+http://localhost:8080/actuator/metrics/user.logins.total
+voir sur postman disp
 
 
