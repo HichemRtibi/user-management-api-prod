@@ -1,5 +1,6 @@
 package com.formation.usermanagement.service.impl;
 
+import com.formation.usermanagement.annotation.TrackMetrics;
 import com.formation.usermanagement.dto.PageResponseDTO;
 import com.formation.usermanagement.dto.ProductRequestDTO;
 import com.formation.usermanagement.dto.ProductResponseDTO;
@@ -56,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDTO creerProduct(ProductRequestDTO dto) {
@@ -87,6 +89,7 @@ public class ProductServiceImpl implements ProductService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Cacheable(value = "products", key = "#id")
     public ProductResponseDTO getProduct(Long id) {
         log.debug("🔍 Récupération du produit ID : {}", id);
@@ -106,6 +109,7 @@ public class ProductServiceImpl implements ProductService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     public PageResponseDTO<ProductResponseDTO> getAllProducts(Pageable pageable) {
         log.info("📋 Récupération des produits - Page: {}, Size: {}",
                 pageable.getPageNumber(), pageable.getPageSize());
@@ -118,6 +122,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @TrackMetrics
     public List<ProductSummaryDTO> getAllProductsList() {
         log.debug("📋 Récupération de tous les produits (sans pagination)");
 
@@ -130,6 +135,7 @@ public class ProductServiceImpl implements ProductService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO dto) {
@@ -164,6 +170,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDTO updateStock(Long id, Integer quantity) {
@@ -187,6 +194,7 @@ public class ProductServiceImpl implements ProductService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
     public void deleteProduct(Long id) {
@@ -206,6 +214,7 @@ public class ProductServiceImpl implements ProductService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     public PageResponseDTO<ProductResponseDTO> searchProducts(String keyword, Pageable pageable) {
         log.info("🔍 Recherche de produits - Mot-clé: {}, Page: {}",
                 keyword, pageable.getPageNumber());
@@ -218,6 +227,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @TrackMetrics
     public PageResponseDTO<ProductResponseDTO> getProductsByCategory(Long categoryId, Pageable pageable) {
         log.info("📋 Récupération des produits de la catégorie ID : {}", categoryId);
 
@@ -235,6 +245,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @TrackMetrics
     public List<ProductResponseDTO> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
         log.info("📋 Récupération des produits entre {} et {}", minPrice, maxPrice);
 
@@ -243,6 +254,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @TrackMetrics
     public PageResponseDTO<ProductResponseDTO> getProductsInStock(Pageable pageable) {
         log.info("📋 Récupération des produits en stock - Page: {}", pageable.getPageNumber());
 

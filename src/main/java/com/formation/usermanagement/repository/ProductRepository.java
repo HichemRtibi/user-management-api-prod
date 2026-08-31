@@ -1,5 +1,6 @@
 package com.formation.usermanagement.repository;
 
+import com.formation.usermanagement.annotation.TrackMetrics;
 import com.formation.usermanagement.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     /**
      * Trouve les produits d'une catégorie avec pagination.
      */
+    @TrackMetrics
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
     /**

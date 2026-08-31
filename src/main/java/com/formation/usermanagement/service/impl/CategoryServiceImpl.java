@@ -1,5 +1,6 @@
 package com.formation.usermanagement.service.impl;
 
+import com.formation.usermanagement.annotation.TrackMetrics;
 import com.formation.usermanagement.dto.PageResponseDTO;
 import com.formation.usermanagement.dto.CategoryRequestDTO;
 import com.formation.usermanagement.dto.CategoryResponseDTO;
@@ -53,6 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponseDTO creerCategory(CategoryRequestDTO dto) {
@@ -83,6 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Cacheable(value = "categories", key = "#id")
+    @TrackMetrics
     public CategoryResponseDTO getCategory(Long id) {
         log.debug("🔍 Récupération de la catégorie ID : {}", id);
 
@@ -97,6 +100,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @TrackMetrics
     @Cacheable(value = "categories", key = "#name")
     public CategoryResponseDTO getCategoryByName(String name) {
         log.debug("🔍 Récupération de la catégorie par nom : {}", name);
@@ -115,6 +119,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     public PageResponseDTO<CategoryResponseDTO> getAllCategories(Pageable pageable) {
         log.info("📋 Récupération des catégories - Page: {}, Size: {}",
                 pageable.getPageNumber(), pageable.getPageSize());
@@ -127,6 +132,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @TrackMetrics
     public List<CategoryResponseDTO> getAllCategoriesList() {
         log.debug("📋 Récupération de toutes les catégories (sans pagination)");
 
@@ -135,6 +141,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @TrackMetrics
     public List<CategorySummaryDTO> getAllCategoriesSummary() {
         log.debug("📋 Récupération des catégories (version résumée)");
 
@@ -147,6 +154,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponseDTO updateCategory(Long id, CategoryRequestDTO dto) {
@@ -185,6 +193,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "categories", allEntries = true)
     public void deleteCategory(Long id) {
@@ -214,6 +223,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     public PageResponseDTO<CategoryResponseDTO> searchCategories(String keyword, Pageable pageable) {
         log.info("🔍 Recherche de catégories - Mot-clé: {}, Page: {}",
                 keyword, pageable.getPageNumber());
@@ -231,6 +241,7 @@ public class CategoryServiceImpl implements CategoryService {
     // ============================================================
 
     @Override
+    @TrackMetrics
     public boolean existeParNom(String name) {
         return categoryRepository.existsByName(name);
     }

@@ -1,5 +1,6 @@
 package com.formation.usermanagement.service.impl;
 
+import com.formation.usermanagement.annotation.TrackMetrics;
 import com.formation.usermanagement.dto.PageResponseDTO;
 import com.formation.usermanagement.dto.permision.PermissionDTO;
 import com.formation.usermanagement.dto.permision.PermissionRequestDTO;
@@ -27,15 +28,15 @@ import java.util.stream.Collectors;
 
 /**
  * IMPLÉMENTATION DU SERVICE PERMISSION
- *
+ * <p>
  * Cette classe contient TOUTE la logique métier pour la gestion des permissions.
- *
+ * <p>
  * ⚠️ ANNOTATIONS IMPORTANTES :
  * - @Service : Déclare que cette classe est un bean Spring (Service)
  * - @Transactional : Gère les transactions (rollback automatique en cas d'erreur)
  * - @Slf4j : Active les logs (log.info, log.debug, log.warn, log.error)
  * - @RequiredArgsConstructor : Génère un constructeur avec tous les champs final
- *
+ * <p>
  * Pourquoi @Transactional ?
  * - Les opérations de création/modification/suppression doivent être atomiques
  * - Si une erreur survient, la transaction est annulée (rollback)
@@ -52,7 +53,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     /**
      * 📌 permissionRepository : Accès à la BDD pour les permissions
-     *
+     * <p>
      * Méthodes disponibles :
      * - save() : Sauvegarder une permission
      * - findById() : Récupérer par ID
@@ -67,7 +68,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     /**
      * 📌 roleRepository : Accès à la BDD pour les rôles
-     *
+     * <p>
      * Utilisé pour vérifier si une permission est utilisée par des rôles
      * avant de la supprimer.
      */
@@ -81,45 +82,46 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : creerPermission()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Créer une nouvelle permission
-     *
+     * <p>
      * 📋 ÉTAPES :
-     *
+     * <p>
      * 1. Vérifier que le nom n'existe pas déjà
-     *    → Si oui → PermissionDejaExistantException
-     *
+     * → Si oui → PermissionDejaExistantException
+     * <p>
      * 2. Vérifier que la combinaison (category, name) n'existe pas
-     *    → Si oui → PermissionDejaExistantException
-     *
+     * → Si oui → PermissionDejaExistantException
+     * <p>
      * 3. Convertir le DTO en entité (Mapper)
-     *    → PermissionMapper.toEntity(dto)
-     *
+     * → PermissionMapper.toEntity(dto)
+     * <p>
      * 4. Sauvegarder en base
-     *    → permissionRepository.save(permission)
-     *
+     * → permissionRepository.save(permission)
+     * <p>
      * 5. Convertir l'entité sauvegardée en DTO
-     *    → PermissionMapper.toDTO(saved)
-     *
+     * → PermissionMapper.toDTO(saved)
+     * <p>
      * 6. Retourner le DTO
-     *
+     * <p>
      * 🔴 EXCEPTIONS POSSIBLES :
      * - PermissionDejaExistantException : Le nom ou la combinaison existe déjà
-     *
+     * <p>
      * ✅ SUCCÈS : PermissionDTO
-     *
+     * <p>
      * 📊 EXEMPLE D'APPEL :
      * PermissionRequestDTO dto = PermissionRequestDTO.builder()
-     *     .category("USER")
-     *     .name("USER_READ")
-     *     .description("Lire les utilisateurs")
-     *     .build();
-     *
+     * .category("USER")
+     * .name("USER_READ")
+     * .description("Lire les utilisateurs")
+     * .build();
+     * <p>
      * PermissionDTO resultat = permissionService.creerPermission(dto);
      * // resultat.getId() → 1
      * // resultat.getName() → "USER_READ"
      */
     @Override
+    @TrackMetrics
     @Transactional
     @CacheEvict(value = "permissions", allEntries = true)  // ← DOIT ÊTRE PRÉSENT
     public PermissionDTO creerPermission(@Valid PermissionRequestDTO dto) {
@@ -178,20 +180,21 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : getPermission()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Récupérer une permission par son ID
-     *
+     * <p>
      * 📋 ÉTAPES :
      * 1. Chercher la permission en base (findById)
      * 2. Si non trouvée → PermissionNotFoundException
      * 3. Convertir en DTO
      * 4. Retourner le DTO
-     *
+     * <p>
      * 🔴 EXCEPTION : PermissionNotFoundException
      * ✅ SUCCÈS : PermissionDTO
      */
     @Override
-    @Cacheable(value = "permissions",key = "#id")
+    @Cacheable(value = "permissions", key = "#id")
+    @TrackMetrics
     public PermissionDTO getPermission(Long id) {
         log.debug("🔍 Récupération de la permission avec ID : {}", id);
 
@@ -215,15 +218,15 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : getPermissionByName()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Récupérer une permission par son nom
-     *
+     * <p>
      * 🔴 EXCEPTION : PermissionNotFoundException
      * ✅ SUCCÈS : PermissionDTO
      */
     @Override
-    @Cacheable(value = "permissions",key = "#name")
-
+    @Cacheable(value = "permissions", key = "#name")
+    @TrackMetrics
     public PermissionDTO getPermissionByName(String name) {
         log.debug("🔍 Récupération de la permission avec nom : {}", name);
 
@@ -244,22 +247,23 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : getAllPermissions()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Récupérer toutes les permissions avec pagination
-     *
+     * <p>
      * 📋 ÉTAPES :
      * 1. Appeler le repository avec les paramètres de pagination
      * 2. Mapper la page (Permission → PermissionDTO)
      * 3. Retourner un PageResponseDTO
-     *
+     * <p>
      * 📊 Paramètres de pagination (Pageable) :
      * - page : Numéro de la page (commence à 0)
      * - size : Nombre d'éléments par page (ex: 10, 20, 50)
      * - sort : Tri (ex: "name,asc")
-     *
+     * <p>
      * ✅ SUCCÈS : PageResponseDTO<PermissionDTO>
      */
     @Override
+    @TrackMetrics
     public PageResponseDTO<PermissionDTO> getAllPermissions(Pageable pageable) {
         log.info("📋 Récupération des permissions - Page: {}, Size: {}",
                 pageable.getPageNumber(), pageable.getPageSize());
@@ -274,17 +278,18 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : getAllPermissionsList()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Récupérer toutes les permissions (sans pagination)
-     *
+     * <p>
      * Utile pour :
      * - Les formulaires de sélection
      * - Les interfaces d'administration
      * - Les exports
-     *
+     * <p>
      * ✅ SUCCÈS : List<PermissionDTO>
      */
     @Override
+    @TrackMetrics
     public List<PermissionDTO> getAllPermissionsList() {
         log.debug("📋 Récupération de toutes les permissions (sans pagination)");
 
@@ -298,16 +303,17 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : getPermissionsByCategory()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Récupérer les permissions d'une catégorie spécifique
-     *
+     * <p>
      * Exemple : getPermissionsByCategory("USER") → [USER_READ, USER_WRITE, ...]
      *
      * @param category La catégorie (ex: "USER", "ROLE")
      * @return Liste des permissions de cette catégorie
      */
     @Override
-    @Cacheable(value = "permissionsByCategory",key ="#category" )
+    @Cacheable(value = "permissionsByCategory", key = "#category")
+    @TrackMetrics
     public List<PermissionDTO> getPermissionsByCategory(String category) {
         log.debug("📋 Récupération des permissions pour la catégorie : {}", category);
 
@@ -325,9 +331,9 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : updatePermission()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Mettre à jour une permission existante
-     *
+     * <p>
      * 📋 ÉTAPES :
      * 1. Vérifier que la permission existe → PermissionNotFoundException
      * 2. Vérifier que le nom n'est pas utilisé par une autre permission
@@ -335,16 +341,17 @@ public class PermissionServiceImpl implements PermissionService {
      * 4. Mettre à jour les champs
      * 5. Sauvegarder
      * 6. Retourner le DTO
-     *
+     * <p>
      * 🔴 EXCEPTIONS :
      * - PermissionNotFoundException
      * - PermissionDejaExistantException
-     *
+     * <p>
      * ✅ SUCCÈS : PermissionDTO
      */
     @Override
     @Transactional
-    @CacheEvict(value = "permissions",allEntries = true)
+    @CacheEvict(value = "permissions", allEntries = true)
+    @TrackMetrics
     public PermissionDTO updatePermission(Long id, PermissionRequestDTO dto) {
         log.info("=== DÉBUT mise à jour permission ID : {} ===", id);
 
@@ -411,27 +418,28 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : supprimerPermission()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Supprimer une permission
-     *
+     * <p>
      * 📋 ÉTAPES :
      * 1. Vérifier que la permission existe → PermissionNotFoundException
      * 2. Vérifier qu'elle n'est pas utilisée par des rôles
-     *    → PermissionUtiliseException
+     * → PermissionUtiliseException
      * 3. Supprimer
-     *
+     * <p>
      * Pourquoi vérifier l'utilisation ?
      * → Une permission utilisée par un rôle ne peut pas être supprimée
      * → Cela garantit l'intégrité des données
      * → Évite les rôles avec des permissions inexistantes
-     *
+     * <p>
      * 🔴 EXCEPTIONS :
      * - PermissionNotFoundException
      * - PermissionUtiliseException
      */
     @Override
+    @TrackMetrics
     @Transactional
-    @CacheEvict(value = "permissions",allEntries = true)
+    @CacheEvict(value = "permissions", allEntries = true)
 
     public void supprimerPermission(Long id) {
         log.info("🗑️ Suppression de la permission avec ID : {}", id);
@@ -471,17 +479,17 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : existeParNom()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Vérifier si une permission existe par son nom
-     *
+     * <p>
      * Utilisé par :
      * - Le Controller pour vérifier avant la création
      * - L'assignation de permissions à un rôle
-     *
+     * <p>
      * ✅ RETOUR : boolean (true si la permission existe)
      */
     @Override
-
+    @TrackMetrics
     public boolean existeParNom(String name) {
         return permissionRepository.existsByName(name);
     }
@@ -490,15 +498,15 @@ public class PermissionServiceImpl implements PermissionService {
      * ============================================================
      * MÉTHODE : existeParCategoryEtNom()
      * ============================================================
-     *
+     * <p>
      * 🎯 OBJECTIF : Vérifier si une combinaison category + name existe
-     *
+     * <p>
      * Utilisé pour la validation avant la création.
-     *
+     * <p>
      * ✅ RETOUR : boolean
      */
     @Override
-
+    @TrackMetrics
     public boolean existeParCategoryEtNom(String category, String name) {
         return permissionRepository.existsByCategoryAndName(category, name);
     }
