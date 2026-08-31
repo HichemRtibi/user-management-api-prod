@@ -1,0 +1,142 @@
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    COMMENT FONCTIONNE L'AOP                                │
+│                                                                             │
+│  1. Vous appelez la méthode : productService.getProduct(1)                 │
+│                          │                                                  │
+│                          ▼                                                  │
+│  2. L'Aspect intercepte (comme un piège)                                   │
+│     ┌─────────────────────────────────────────────────────────────────┐   │
+│     │  🔵 AVANT : Démarrer le chronomètre                             │   │
+│     │  ────────────────────────────────────────────────────────────── │   │
+│     │  ⚪ EXÉCUTION : La méthode getProduct() s'exécute              │   │
+│     │  ────────────────────────────────────────────────────────────── │   │
+│     │  🔴 APRÈS : Arrêter le chronomètre et enregistrer la durée     │   │
+│     └─────────────────────────────────────────────────────────────────┘   │
+│                          │                                                  │
+│                          ▼                                                  │
+│  3. La métrique est disponible dans /actuator/metrics                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+EXPLICATION DU CODE
+Partie	Explication
+@Aspect	Dit à Spring que c'est un Aspect
+@Component	Rend la classe disponible pour l'injection
+@Around	Intercepte AVANT et APRÈS l'exécution
+ProceedingJoinPoint	Représente la méthode interceptée
+Timer.Sample	Chronomètre pour mesurer le temps
+joinPoint.proceed()	Exécute la méthode réelle
+
+
+1. @TrackMetrics sur une méthode
+   ↓
+2. L'Aspect détecte l'annotation
+   ↓
+3. Chronomètre démarre
+   ↓
+4. La méthode s'exécute
+   ↓
+5. Chronomètre s'arrête
+   ↓
+6. Métrique enregistrée dans /actuator/metrics
+
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    NOS MÉTRIQUES AU COMPLET                                │
+│                                                                             │
+│  📝 MÉTRIQUES MANUELLES (MÉTIER)                                           │
+│  ├── user.registrations.total      → Compteur d'inscriptions              │
+│  ├── user.logins.total             → Compteur de connexions réussies      │
+│  ├── user.logins.failed            → Compteur d'échecs de connexion       │
+│  ├── user.login.duration           → Temps de connexion                   │
+│  └── user.creation.duration        → Temps d'inscription                  │
+│                                                                             │
+│  📝 MÉTRIQUES AOP (TECHNIQUE) - ProductController                          │
+│  ├── method.ProductController.getAllProducts.duration                     │
+│  ├── method.ProductController.getProduct.duration                         │
+│  ├── method.ProductController.getAllProductsList.duration                 │
+│  ├── method.ProductController.createProduct.duration                      │
+│  ├── method.ProductController.searchProducts.duration                     │
+│  ├── method.ProductController.getProductsByCategory.duration              │
+│  ├── method.ProductController.getProductsByPriceRange.duration            │
+│  ├── method.ProductController.getProductsInStock.duration                 │
+│  ├── method.ProductController.countInStock.duration                       │
+│  ├── method.ProductController.getAveragePrice.duration                    │
+│  └── method.ProductController.getTotalStockValue.duration                 │
+│                                                                             │
+│  📝 MÉTRIQUES PAR DÉFAUT (Spring Boot Actuator)                            │
+│  ├── jvm.memory.used              → Mémoire JVM                          │
+│  ├── process.cpu.usage            → Utilisation CPU                      │
+│  ├── http.server.requests         → Requêtes HTTP                       │
+│  ├── jdbc.connections.active      → Connexions BDD actives              │
+│  ├── hikaricp.connections.active  → Connexions HikariCP                 │
+│  ├── system.cpu.usage             → Utilisation CPU système             │
+│  └── disk.free                    → Espace disque libre                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+ LES POINTS CLÉS À RETENIR POUR L'ENTRETIEN
+Question 1 : "Comment avez-vous mis en place le monitoring ?"
+Réponse : J'ai utilisé Spring Boot Actuator avec Micrometer. J'ai ajouté les dépendances, configuré les endpoints dans application.properties, et sécurisé l'accès avec Spring Security. J'ai créé deux types de métriques : des métriques métier manuelles pour les inscriptions/connexions, et des métriques techniques avec AOP pour mesurer automatiquement le temps des méthodes.
+
+Question 2 : "Quelle est la différence entre les métriques manuelles et AOP ?"
+Réponse : Les métriques manuelles sont pour des événements métier spécifiques (inscriptions, connexions) où je contrôle précisément quand incrémenter. L'AOP est pour des métriques techniques génériques (temps de réponse) où je veux mesurer toutes les méthodes sans dupliquer le code.
+
+
+Question 3 : "Comment accédez-vous aux métriques ?"
+Réponse : Toutes les métriques sont exposées via /actuator/metrics. Les métriques sont au format Prometheus pour une intégration future avec Grafana. Les endpoints sensibles sont protégés avec le rôle ADMIN.
+
+Question 4 : "Quels sont les avantages de cette approche ?"
+Réponse : Les avantages sont : monitoring en temps réel, détection rapide des problèmes de performance, code propre avec l'AOP, métriques métier et techniques, et facilité d'intégration avec Prometheus/Grafana.
+
+
+
+# 1. Voir toutes les métriques
+GET http://localhost:8080/actuator/metrics
+
+# 2. Voir une métrique manuelle
+GET http://localhost:8080/actuator/metrics/user.registrations.total
+
+# 3. Voir une métrique AOP
+GET http://localhost:8080/actuator/metrics/method.ProductController.getAllProducts.duration
+
+# 4. Voir la santé
+GET http://localhost:8080/actuator/health
+
+🎯 BONNE PRATIQUE RECOMMANDÉE
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    STRATÉGIE RECOMMANDÉE                                   │
+│                                                                             │
+│  ✅ Controller : @TrackMetrics                                              │
+│     → Mesurer le temps TOTAL de la requête                                │
+│     → Inclut : HTTP + Validation + Service + BDD                         │
+│                                                                             │
+│  ✅ Service : @TrackMetrics                                                 │
+│     → Mesurer le temps MÉTIER                                             │
+│     → Inclut : Logique métier + BDD                                       │
+│                                                                             │
+│  ✅ Repository : @TrackMetrics (optionnel)                                 │
+│     → Mesurer le temps DES REQUÊTES BDD                                   │
+│     → Pour identifier les requêtes lentes                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    VISION COMPLÈTE DES PERFORMANCES                        │
+│                                                                             │
+│  📊 Controller : method.ProductController.getProduct.duration             │
+│     → 350 ms (HTTP + Service + BDD)                                       │
+│                                                                             │
+│  📊 Service : method.ProductServiceImpl.getProduct.duration              │
+│     → 280 ms (Service + BDD)                                              │
+│                                                                             │
+│  📊 Repository : method.ProductRepository.findById.duration              │
+│     → 250 ms (BDD UNIQUEMENT)                                             │
+│                                                                             │
+│  🔍 Analyse :                                                              │
+│     - BDD = 250 ms (71% du temps)                                          │
+│     - Service = 30 ms (9% du temps)                                        │
+│     - HTTP = 70 ms (20% du temps)                                          │
+│     → On sait que le goulot d'étranglement est la BDD !                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+

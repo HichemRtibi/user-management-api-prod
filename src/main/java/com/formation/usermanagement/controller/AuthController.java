@@ -104,6 +104,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO registerRequest) {
         log.info("📝 Inscription : {}", registerRequest.getEmail());
+        Timer.Sample sample = monitoringService.startUserCreationTimer();
 
         // ✅ Vérifier si l'email existe déjà
         if (utilisateurRepository.existsByEmail(registerRequest.getEmail())) {
@@ -128,6 +129,7 @@ public class AuthController {
 
         monitoringService.incrementUserRegistration();
 
+
         // Récupérer l'utilisateur pour avoir createdAt
         Utilisateur utilisateurReload = utilisateurRepository.findById(saved.getId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -145,6 +147,7 @@ public class AuthController {
         String token = tokenProvider.generateToken(authentication);
 
         UtilisateurResponseDTO utilisateurDTO = UtilisateurMapper.toResponseDTO(utilisateurReload);
+        monitoringService.stopUserCreationTimer(sample);
 
         return ResponseEntity.ok(new LoginResponseDTO(token, utilisateurDTO));
     }

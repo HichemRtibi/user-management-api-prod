@@ -20,6 +20,7 @@ public class MonitoringService {
     private Counter userLoginCounter;        // ← AJOUTER
     private Counter userLoginFailedCounter;  // ← AJOUTER
     private Timer loginDurationTimer;
+    private Timer userCreationDurationTimer;
 
     @PostConstruct
     public void init() {
@@ -51,8 +52,15 @@ public class MonitoringService {
                 .description("Durée des connexions")
                 .tag("service", "user-management")
                 .register(meterRegistry);
+        userCreationDurationTimer = Timer.builder("user.creation.duration")
+                .description("Durée de création des utilisateurs")
+                .tag("service", "user-management")
+                .register(meterRegistry);
 
         log.info("✅ Tous les compteurs et timers sont initialisés !");
+
+        log.info("✅ Tous les compteurs et timers sont initialisés !");
+
     }
 
     // Méthode pour incrémenter le compteur
@@ -80,5 +88,13 @@ public class MonitoringService {
     public void stopLoginTimer(Timer.Sample sample) {
         sample.stop(loginDurationTimer);
         log.debug("⏱️ Durée de connexion enregistrée");
+    }
+    public Timer.Sample startUserCreationTimer() {
+        return Timer.start(meterRegistry);
+    }
+
+    public void stopUserCreationTimer(Timer.Sample sample) {
+        sample.stop(userCreationDurationTimer);
+        log.debug("⏱️ Durée de création utilisateur enregistrée");
     }
 }

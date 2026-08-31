@@ -1,5 +1,6 @@
 package com.formation.usermanagement.controller;
 
+import com.formation.usermanagement.annotation.TrackMetrics;
 import com.formation.usermanagement.dto.PageResponseDTO;
 import com.formation.usermanagement.dto.ProductRequestDTO;
 import com.formation.usermanagement.dto.ProductResponseDTO;
@@ -73,6 +74,7 @@ public class ProductController {
     @GetMapping
     @Operation(summary = "Récupérer tous les produits (paginé)")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getAllProducts(
             @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC)
             Pageable pageable) {
@@ -91,6 +93,7 @@ public class ProductController {
     @GetMapping("/all")
     @Operation(summary = "Récupérer tous les produits (sans pagination)")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<List<ProductSummaryDTO>> getAllProductsList() {
         log.info("📋 Récupération de tous les produits (sans pagination)");
         List<ProductSummaryDTO> response = productService.getAllProductsList();
@@ -108,6 +111,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Produit non trouvé")
     })
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<ProductResponseDTO> getProduct(
             @Parameter(description = "ID du produit", example = "1")
             @PathVariable Long id) {
@@ -128,6 +132,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Catégorie non trouvée")
     })
     @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
+    @TrackMetrics
     public ResponseEntity<ProductResponseDTO> createProduct(
             @Valid @RequestBody ProductRequestDTO dto) {
 
@@ -213,6 +218,7 @@ public class ProductController {
     @GetMapping("/search")
     @Operation(summary = "Rechercher des produits par mot-clé")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<PageResponseDTO<ProductResponseDTO>> searchProducts(
             @Parameter(description = "Mot-clé à rechercher", example = "iPhone")
             @RequestParam String keyword,
@@ -235,6 +241,7 @@ public class ProductController {
     @GetMapping("/category/{categoryId}")
     @Operation(summary = "Récupérer les produits d'une catégorie")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getProductsByCategory(
             @Parameter(description = "ID de la catégorie", example = "1")
             @PathVariable Long categoryId,
@@ -256,6 +263,7 @@ public class ProductController {
     @GetMapping("/price-range")
     @Operation(summary = "Récupérer les produits dans une fourchette de prix")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<List<ProductResponseDTO>> getProductsByPriceRange(
             @Parameter(description = "Prix minimum", example = "10")
             @RequestParam BigDecimal min,
@@ -277,6 +285,7 @@ public class ProductController {
     @GetMapping("/in-stock")
     @Operation(summary = "Récupérer les produits en stock")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<PageResponseDTO<ProductResponseDTO>> getProductsInStock(
             @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC)
             Pageable pageable) {
@@ -297,6 +306,7 @@ public class ProductController {
     @GetMapping("/stats/count-in-stock")
     @Operation(summary = "Compter les produits en stock")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<Long> countInStock() {
         long count = productService.countInStock();
         log.info("📊 Nombre de produits en stock : {}", count);
@@ -306,6 +316,7 @@ public class ProductController {
     @GetMapping("/stats/average-price")
     @Operation(summary = "Calculer le prix moyen des produits")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<Double> getAveragePrice() {
         double avg = productService.getAveragePrice();
         log.info("📊 Prix moyen : {}", avg);
@@ -315,6 +326,7 @@ public class ProductController {
     @GetMapping("/stats/total-value")
     @Operation(summary = "Calculer la valeur totale du stock")
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
+    @TrackMetrics
     public ResponseEntity<BigDecimal> getTotalStockValue() {
         BigDecimal total = productService.getTotalStockValue();
         log.info("📊 Valeur totale du stock : {}", total);

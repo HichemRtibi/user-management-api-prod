@@ -250,3 +250,190 @@ voir sur postman disp
 http://localhost:8080/actuator/metrics/user.login.duration
 
 
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    NOTRE STRATÉGIE DE MONITORING                           │
+│                                                                             │
+│  📝 MÉTRIQUES MÉTIER (MANUELLES)                                           │
+│  ├── user.registrations.total → Incrémenté dans AuthController.register   │
+│  ├── user.logins.total        → Incrémenté dans AuthController.login      │
+│  └── user.logins.failed       → Incrémenté dans AuthController.login catch │
+│                                                                             │
+│  📝 MÉTRIQUES TECHNIQUES (AOP)                                             │
+│  ├── product.*.duration       → @TrackMetrics sur ProductController       │
+│  ├── category.*.duration      → @TrackMetrics sur CategoryController      │
+│  └── http.request.duration    → @TrackMetrics sur tous les controllers    │
+│                                                                             │
+│  📊 EXPOSITION                                                              │
+│  └── /actuator/metrics → Toutes les métriques disponibles                 │
+│                                                                             │
+│  🔒 SÉCURITÉ                                                               │
+│  ├── /actuator/health → PUBLIC                                            │
+│  └── /actuator/metrics → ADMIN SEULEMENT                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+TABLEAU COMPARATIF
+Critère	Approche Manuelle	Approche AOP
+Définition	Écrire le code de monitoring directement dans chaque méthode	Centraliser le monitoring dans une classe séparée (Aspect)
+Méthode	Appel manuel de monitoringService.incrementUserLogin()	Annotation @TrackMetrics sur la méthode
+Complexité	Simple à comprendre	Plus technique (Aspect, Pointcut)
+Code	Dupliqué dans chaque méthode	Centralisé dans 1 classe
+Maintenance	Difficile (modifier chaque méthode)	Facile (modifier 1 classe)
+Performance	Pas d'overhead	Léger overhead (interception)
+Utilisation	Métriques métier spécifiques	Métriques techniques génériques
+Exemple	user.registrations.total	product.get.duration
+
+
+
+2. QUAND UTILISER CHAQUE APPROCHE
+🎯 APPROCHE MANUELLE
+Quand l'utiliser :
+
+✅ Métriques MÉTIER spécifiques à votre domaine
+
+✅ Peu de méthodes concernées (2-5)
+
+✅ Besoin de contrôle précis sur quand incrémenter
+
+✅ Logique conditionnelle (incrémenter seulement si succès)
+
+// ✅ Compteur d'inscriptions
+monitoringService.incrementUserRegistration();
+
+// ✅ Compteur de connexions réussies
+monitoringService.incrementUserLogin();
+
+// ✅ Compteur de paiements
+monitoringService.incrementPaymentSuccess();
+
+
+🎯 APPROCHE AOP
+Quand l'utiliser :
+
+✅ Métriques TECHNIQUES génériques
+
+✅ BEAUCOUP de méthodes concernées (10-100)
+
+✅ Mesurer le temps d'exécution
+
+✅ Logger automatiquement
+
+✅ Vérifier les permissions automatiquement
+
+// ✅ Mesurer le temps de TOUS les produits
+@TrackMetrics
+public Product getProduct(Long id) { ... }
+
+// ✅ Logger automatiquement TOUTES les requêtes
+@TrackMetrics
+public List<Product> getAllProducts() { ... }
+
+// ✅ Vérifier les permissions automatiquement
+@TrackMetrics
+public Product createProduct(ProductDTO dto) { ... }
+
+
+
+3. RÉSUMÉ DE NOTRE PROJET
+📊 MÉTRIQUES MANUELLES (MÉTIER)
+Métrique	Pourquoi manuelle ?
+user.registrations.total	Compteur métier spécifique
+user.logins.total	Compteur métier spécifique
+user.logins.failed	Compteur métier spécifique
+user.login.duration	Mesure spécifique du login
+user.creation.duration	Mesure spécifique de l'inscription
+
+
+📊 MÉTRIQUES AOP (TECHNIQUE)
+Métrique	Pourquoi AOP ?
+product.get.duration	10 méthodes produits
+category.get.duration	8 méthodes catégories
+http.request.duration	Toutes les requêtes HTTP
+
+
+4. POUR RÉPONDRE EN ENTRETIEN
+❓ QUESTION : "Comment faites-vous du monitoring dans vos APIs ?"
+Réponse type :
+
+"Dans mon projet, j'utilise Spring Actuator combiné avec Micrometer pour faire du monitoring. Je distingue deux types de métriques :
+
+1. Métriques métier (manuelles) :
+
+Je crée des compteurs spécifiques comme user.registrations.total ou user.logins.total
+
+J'incrémente manuellement ces compteurs dans mes services
+
+Exemple : après une inscription réussie, j'appelle monitoringService.incrementUserRegistration()
+
+2. Métriques techniques (AOP) :
+
+J'utilise AOP pour mesurer automatiquement le temps de réponse
+
+Je crée une annotation @TrackMetrics que je mets sur mes méthodes
+
+Un Aspect intercepter toutes les méthodes annotées et mesure leur temps d'exécution
+
+Avantages :
+
+Code propre et maintenable
+
+Métriques disponibles via /actuator/metrics
+
+Facilité d'intégration avec Prometheus et Grafana"
+❓ QUESTION : "Pourquoi AOP plutôt que du code manuel ?"
+Réponse type :
+
+"J'utilise AOP pour les métriques techniques génériques comme le temps de réponse, et du code manuel pour les métriques métier spécifiques.
+
+Exemple concret :
+
+Si je veux compter le nombre d'inscriptions → manuel (c'est métier)
+
+Si je veux mesurer le temps de TOUS les endpoints produits → AOP (c'est technique)
+
+Les avantages d'AOP :
+
+Pas de duplication de code
+
+Centralisation de la logique de monitoring
+
+Facile à maintenir
+
+1 annotation pour mesurer 100 méthodes"
+
+
+❓ QUESTION : "Quelles métriques surveillez-vous ?"
+Réponse type :
+
+"Je surveille plusieurs types de métriques :
+
+Métriques système :
+
+CPU, mémoire, threads
+
+Fournies automatiquement par Spring Boot Actuator
+
+Métriques HTTP :
+
+Nombre de requêtes
+
+Temps de réponse
+
+Codes de statut (200, 400, 401, 403, 500)
+
+Métriques métier (personnalisées) :
+user.registrations.total : nombre d'inscriptions
+
+user.logins.total : nombre de connexions réussies
+
+user.logins.failed : nombre d'échecs de connexion
+
+Métriques techniques (AOP) :
+
+Temps de réponse des endpoints produits
+
+Temps de réponse des endpoints catégories
+
+Temps de réponse global des API"
+

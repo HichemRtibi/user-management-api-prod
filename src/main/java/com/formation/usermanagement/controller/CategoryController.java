@@ -1,5 +1,6 @@
 package com.formation.usermanagement.controller;
 
+import com.formation.usermanagement.annotation.TrackMetrics;
 import com.formation.usermanagement.dto.PageResponseDTO;
 import com.formation.usermanagement.dto.CategoryRequestDTO;
 import com.formation.usermanagement.dto.CategoryResponseDTO;
@@ -75,6 +76,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "403", description = "Accès refusé")
     })
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
+    @TrackMetrics
     public ResponseEntity<PageResponseDTO<CategoryResponseDTO>> getAllCategories(
             @Parameter(description = "Paramètres de pagination")
             @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC)
@@ -99,6 +101,7 @@ public class CategoryController {
     @GetMapping("/all")
     @Operation(summary = "Récupérer toutes les catégories (sans pagination)")
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
+    @TrackMetrics
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategoriesList() {
         log.info("📋 Récupération de toutes les catégories (sans pagination)");
         List<CategoryResponseDTO> response = categoryService.getAllCategoriesList();
@@ -118,6 +121,7 @@ public class CategoryController {
     @GetMapping("/summary")
     @Operation(summary = "Récupérer toutes les catégories (version résumée)")
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
+    @TrackMetrics
     public ResponseEntity<List<CategorySummaryDTO>> getAllCategoriesSummary() {
         log.info("📋 Récupération des catégories (version résumée)");
         List<CategorySummaryDTO> response = categoryService.getAllCategoriesSummary();
@@ -140,6 +144,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Catégorie non trouvée")
     })
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
+    @TrackMetrics
     public ResponseEntity<CategoryResponseDTO> getCategory(
             @Parameter(description = "ID de la catégorie", example = "1")
             @PathVariable Long id) {
@@ -161,6 +166,7 @@ public class CategoryController {
     @GetMapping("/name/{name}")
     @Operation(summary = "Récupérer une catégorie par son nom")
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
+    @TrackMetrics
     public ResponseEntity<CategoryResponseDTO> getCategoryByName(
             @Parameter(description = "Nom de la catégorie", example = "Électronique")
             @PathVariable String name) {
@@ -187,6 +193,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "409", description = "Catégorie déjà existante")
     })
     @PreAuthorize("hasAuthority('CATEGORY_CREATE')")
+    @TrackMetrics
     public ResponseEntity<CategoryResponseDTO> createCategory(
             @Valid @RequestBody CategoryRequestDTO dto) {
 
@@ -218,6 +225,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "409", description = "Nom déjà utilisé")
     })
     @PreAuthorize("hasAuthority('CATEGORY_UPDATE')")
+    @TrackMetrics
     public ResponseEntity<CategoryResponseDTO> updateCategory(
             @Parameter(description = "ID de la catégorie", example = "1")
             @PathVariable Long id,
@@ -251,6 +259,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "409", description = "Catégorie utilisée par des produits")
     })
     @PreAuthorize("hasAuthority('CATEGORY_DELETE')")
+    @TrackMetrics
     public ResponseEntity<Void> deleteCategory(
             @Parameter(description = "ID de la catégorie", example = "1")
             @PathVariable Long id) {
@@ -275,6 +284,7 @@ public class CategoryController {
     @GetMapping("/search")
     @Operation(summary = "Rechercher des catégories par mot-clé")
     @PreAuthorize("hasAuthority('CATEGORY_READ')")
+    @TrackMetrics
     public ResponseEntity<PageResponseDTO<CategoryResponseDTO>> searchCategories(
             @Parameter(description = "Mot-clé à rechercher", example = "Electronique")
             @RequestParam String keyword,
