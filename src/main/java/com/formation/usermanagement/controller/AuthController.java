@@ -10,6 +10,7 @@ import com.formation.usermanagement.mapper.UtilisateurMapper;
 import com.formation.usermanagement.repository.UtilisateurRepository;
 import com.formation.usermanagement.config.security.JwtTokenProvider;
 import com.formation.usermanagement.service.MonitoringService;
+import io.micrometer.core.instrument.Timer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -62,6 +63,8 @@ public class AuthController {
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         log.info("🔐 Tentative de connexion : {}", loginRequest.getEmail());
+        Timer.Sample sample = monitoringService.startLoginTimer();
+
         try {
 
 
@@ -86,10 +89,12 @@ public class AuthController {
             UtilisateurResponseDTO utilisateurDTO = UtilisateurMapper.toResponseDTO(utilisateur);
 
             log.info("✅ Connexion réussie pour : {}", loginRequest.getEmail());
-
+            monitoringService.incrementUserLogin();
+            monitoringService.stopLoginTimer(sample);
             return ResponseEntity.ok(new LoginResponseDTO(token, utilisateurDTO));
         } catch (AuthenticationException e) {
             monitoringService.incrementUserLoginFailed();
+            monitoringService.stopLoginTimer(sample);
 
             log.warn("❌ Échec de connexion : {}", loginRequest.getEmail());
             throw new RuntimeException("Email ou mot de passe incorrect");

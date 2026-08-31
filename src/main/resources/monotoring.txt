@@ -246,3 +246,7 @@ http://localhost:8080/actuator/metrics/user.logins.total
 voir sur postman disp
 
 
+
+http://localhost:8080/actuator/metrics/user.login.duration
+
+

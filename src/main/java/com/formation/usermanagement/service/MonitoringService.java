@@ -2,6 +2,7 @@ package com.formation.usermanagement.service;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ public class MonitoringService {
     private Counter userRegistrationCounter;
     private Counter userLoginCounter;        // ← AJOUTER
     private Counter userLoginFailedCounter;  // ← AJOUTER
-
+    private Timer loginDurationTimer;
 
     @PostConstruct
     public void init() {
@@ -42,6 +43,16 @@ public class MonitoringService {
                 .register(meterRegistry);
 
         log.info("✅ Tous les compteurs sont initialisés !");
+
+        // ============================================================
+        // AJOUTER LE TIMER ICI
+        // ============================================================
+        loginDurationTimer = Timer.builder("user.login.duration")
+                .description("Durée des connexions")
+                .tag("service", "user-management")
+                .register(meterRegistry);
+
+        log.info("✅ Tous les compteurs et timers sont initialisés !");
     }
 
     // Méthode pour incrémenter le compteur
@@ -58,5 +69,16 @@ public class MonitoringService {
     public void incrementUserLoginFailed() {
         userLoginFailedCounter.increment();
         log.debug("📈 +1 échec de connexion");
+    }
+
+    // Démarrer le chronomètre
+    public Timer.Sample startLoginTimer() {
+        return Timer.start(meterRegistry);
+    }
+
+    // Arrêter le chronomètre et enregistrer la durée
+    public void stopLoginTimer(Timer.Sample sample) {
+        sample.stop(loginDurationTimer);
+        log.debug("⏱️ Durée de connexion enregistrée");
     }
 }
