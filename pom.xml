@@ -160,17 +160,7 @@
         <!-- REDIS (Cache Distribué)                                       -->
         <!-- ============================================================ -->
 
-        <!-- Spring Boot Starter Data Redis -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
 
-        <!-- Lettuce (Client Redis - le plus performant) -->
-        <dependency>
-            <groupId>io.lettuce</groupId>
-            <artifactId>lettuce-core</artifactId>
-        </dependency>
 
         <!-- Pour sérialiser les objets en JSON -->
         <dependency>
